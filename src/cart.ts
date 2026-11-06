@@ -40,13 +40,25 @@ export function removeItem(cartId: string, productId: string): Cart | undefined 
   return cart;
 }
 
+export function clearCart(cartId: string): Cart | undefined {
+  const cart = carts.get(cartId);
+  if (!cart) return undefined;
+  cart.items = [];
+  return cart;
+}
+
+/** Adds flat shipping under the free-shipping threshold; nothing to ship costs nothing. */
+export function totalsFromSubtotal(subtotalCents: number): CartTotals {
+  const shippingCents =
+    subtotalCents === 0 || subtotalCents >= FREE_SHIPPING_FROM_CENTS ? 0 : SHIPPING_CENTS;
+  return { subtotalCents, shippingCents, totalCents: subtotalCents + shippingCents };
+}
+
 /** Subtotal of the items, plus flat shipping under the free-shipping threshold. */
 export function totals(cart: Cart): CartTotals {
   const subtotalCents = cart.items.reduce((sum, item) => {
     const product = findProduct(item.productId);
     return sum + (product ? product.priceCents * item.qty : 0);
   }, 0);
-  const shippingCents =
-    subtotalCents === 0 || subtotalCents >= FREE_SHIPPING_FROM_CENTS ? 0 : SHIPPING_CENTS;
-  return { subtotalCents, shippingCents, totalCents: subtotalCents + shippingCents };
+  return totalsFromSubtotal(subtotalCents);
 }

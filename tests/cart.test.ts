@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { addItem, createCart, removeItem, totals } from "../src/cart.ts";
+import { addItem, clearCart, createCart, removeItem, totals } from "../src/cart.ts";
 
 test("adds items and merges the same product", () => {
   const cart = createCart();
@@ -32,4 +32,12 @@ test("removes an item", () => {
   addItem(cart.id, "p-1", 1);
   removeItem(cart.id, "p-1");
   assert.deepEqual(cart.items, []);
+});
+
+test("clears a cart", () => {
+  const cart = createCart();
+  addItem(cart.id, "p-1", 1);
+  addItem(cart.id, "p-3", 2);
+  assert.deepEqual(clearCart(cart.id)?.items, []);
+  assert.equal(clearCart("cart-nope"), undefined);
 });
