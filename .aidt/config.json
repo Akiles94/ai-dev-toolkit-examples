@@ -1,0 +1,18 @@
+{
+  "limits": {
+    "sectionLines": 300
+  },
+  "guide": {
+    "marker": "@guide"
+  },
+  "sync": {
+    "agents": ".aidt/agents",
+    "harnesses": [
+      "copilot",
+      "claude-code"
+    ]
+  },
+  "workflow": {
+    "control": "strict"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Akiles94/ai-dev-toolkit/products/workflow/templates/state.schema.json",
+  "title": "aidt task state",
+  "description": "Progress of one task (.aidt/tasks/<branch>/state.json). Lets any agent resume where the last one stopped.",
+  "type": "object",
+  "required": ["version", "branch", "mode", "phase", "sections"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "branch": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Task branch, base of the stack."
+    },
+    "ticket": { "type": "string", "description": "Ticket id or URL, if any." },
+    "mode": { "enum": ["full", "light", "rework"] },
+    "control": {
+      "enum": ["strict", "standard", "fast"],
+      "description": "How much the user reviews: strict (spec, plan, each section), standard (spec, plan), fast (spec). Default strict."
+    },
+    "phase": {
+      "enum": ["refine", "plan", "build", "review", "deliver", "done"],
+      "description": "Current step. Moves forward only after the user approves the previous one."
+    },
+    "approvals": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "When the user approved each artifact (ISO 8601).",
+      "properties": {
+        "spec": { "type": "string", "format": "date-time" },
+        "plan": { "type": "string", "format": "date-time" }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/section" }
+    },
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "enum": ["stack", "single"] },
+        "tool": { "enum": ["gh-stack", "gh", "glab", "git", "none"] }
+      }
+    }
+  },
+  "$defs": {
+    "section": {
+      "type": "object",
+      "required": ["id", "name", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^S[0-9]+$" },
+        "name": { "type": "string", "minLength": 1 },
+        "status": {
+          "enum": [
+            "pending",
+            "in-progress",
+            "awaiting-approval",
+            "approved",
+            "reviewed",
+            "delivered"
+          ]
+        },
+        "branch": { "type": "string", "description": "Branch of this section in the stack." },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$",
+          "description": "Last commit of the section. A verdict is only valid for this commit."
+        },
+        "lines": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Reviewable lines (aidt diff)."
+        },
+        "verdict": { "enum": ["PASS", "FAIL"] },
+        "pr": { "type": "string", "description": "PR number or URL once published." }
+      }
+    }
+  }
+}
