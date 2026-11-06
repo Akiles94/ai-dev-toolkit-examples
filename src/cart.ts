@@ -1,3 +1,4 @@
+import { type CodeError, discountCents, findCode } from "./discounts.ts";
 import { findProduct } from "./products.ts";
 import type { Cart, CartTotals } from "./types.ts";
 import { newId, now } from "./utils.ts";
@@ -40,13 +41,30 @@ export function removeItem(cartId: string, productId: string): Cart | undefined 
   return cart;
 }
 
-/** Subtotal of the items, plus flat shipping under the free-shipping threshold. */
+/** Applies a discount code to the cart, replacing any code applied before. */
+export function applyCode(cartId: string, code: string): Cart | "CART_NOT_FOUND" | CodeError {
+  const cart = carts.get(cartId);
+  if (!cart) return "CART_NOT_FOUND";
+  const found = findCode(code);
+  if (typeof found === "string") return found;
+  cart.discountCode = found.code;
+  return cart;
+}
+
+/** Subtotal of the items, minus the discount, plus flat shipping under the threshold. */
 export function totals(cart: Cart): CartTotals {
   const subtotalCents = cart.items.reduce((sum, item) => {
     const product = findProduct(item.productId);
     return sum + (product ? product.priceCents * item.qty : 0);
   }, 0);
+  const code = cart.discountCode ? findCode(cart.discountCode) : undefined;
+  const discount = code && typeof code !== "string" ? discountCents(code, subtotalCents) : 0;
   const shippingCents =
     subtotalCents === 0 || subtotalCents >= FREE_SHIPPING_FROM_CENTS ? 0 : SHIPPING_CENTS;
-  return { subtotalCents, shippingCents, totalCents: subtotalCents + shippingCents };
+  return {
+    subtotalCents,
+    discountCents: discount,
+    shippingCents,
+    totalCents: subtotalCents - discount + shippingCents,
+  };
 }

@@ -15,10 +15,12 @@ export interface Cart {
   id: string;
   items: CartItem[];
   createdAt: string;
+  discountCode?: string;
 }
 
 export interface CartTotals {
   subtotalCents: number;
+  discountCents: number;
   shippingCents: number;
   totalCents: number;
 }
