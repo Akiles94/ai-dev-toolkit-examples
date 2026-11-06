@@ -4,7 +4,10 @@
   "ticket": "SHOP-24",
   "mode": "full",
   "control": "strict",
-  "phase": "plan",
-  "approvals": { "spec": "2026-11-06T00:00:00Z" },
-  "sections": []
+  "phase": "build",
+  "approvals": { "spec": "2026-11-06T00:00:00Z", "plan": "2026-11-06T12:00:00Z" },
+  "sections": [
+    { "id": "S1", "name": "Low-stock domain", "status": "pending" },
+    { "id": "S2", "name": "Admin endpoints", "status": "pending" }
+  ]
 }
