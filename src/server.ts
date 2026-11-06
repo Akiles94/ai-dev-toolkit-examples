@@ -1,5 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { listAlerts, LOW_STOCK_THRESHOLD } from "./alerts.ts";
 import { addItem, createCart, getCart, removeItem, totals } from "./cart.ts";
+import { lowStockProducts } from "./low-stock.ts";
 import { listProducts } from "./products.ts";
 import type { Product } from "./types.ts";
 import { formatCents, isPositiveInt, readJson } from "./utils.ts";
@@ -28,6 +30,14 @@ async function route(req: IncomingMessage, res: ServerResponse): Promise<void> {
       return send(res, 400, { error: "UNKNOWN_CATEGORY" });
     }
     return send(res, 200, listProducts(category as Product["category"] | undefined));
+  }
+
+  if (req.method === "GET" && url.pathname === "/admin/low-stock") {
+    return send(res, 200, { threshold: LOW_STOCK_THRESHOLD, products: lowStockProducts() });
+  }
+
+  if (req.method === "GET" && url.pathname === "/admin/alerts") {
+    return send(res, 200, listAlerts());
   }
 
   if (req.method === "POST" && url.pathname === "/carts") {
