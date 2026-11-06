@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "branch": "feat/SHOP-24-low-stock-alerts",
+  "ticket": "SHOP-24",
+  "mode": "full",
+  "control": "strict",
+  "phase": "deliver",
+  "approvals": {
+    "spec": "2026-11-06T00:00:00Z",
+    "plan": "2026-11-06T12:00:00Z"
+  },
+  "sections": [
+    {
+      "id": "S1",
+      "name": "Low-stock domain",
+      "status": "reviewed",
+      "verdict": "PASS",
+      "commit": "e829af2",
+      "lines": 55,
+      "branch": "feat/SHOP-24-low-stock-alerts-s01-low-stock-domain"
+    },
+    {
+      "id": "S2",
+      "name": "Admin endpoints",
+      "status": "reviewed",
+      "verdict": "PASS",
+      "commit": "fb160a7",
+      "lines": 10,
+      "branch": "feat/SHOP-24-low-stock-alerts-s02-admin-endpoints"
+    }
+  ],
+  "delivery": {
+    "mode": "stack"
+  }
+}

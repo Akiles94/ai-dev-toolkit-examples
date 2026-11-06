@@ -1,0 +1,759 @@
+diff --git a/README.md b/README.md
+index 24b74b2..484297d 100644
+--- a/README.md
++++ b/README.md
+@@ -10,6 +10,10 @@ npm test     # Node 22.18+ runs the TypeScript directly
+ npm start    # http://localhost:3000/products
+ ```
+ 
++<!-- @guide DOCS: describes the new endpoints. It matches the code for checkout (409/402)
++and the list filter. Small gaps: the ship row says "409 otherwise" but an unknown order
++is 404; a failed refund (502 REFUND_FAILED) and CHECKOUT_IN_PROGRESS (409) are not
++documented. -->
+ ## Checkout and orders
+ 
+ `POST /carts/:id/checkout` with `{ "cardToken": "tok_..." }` turns a cart into a paid order. It
+diff --git a/src/cart.ts b/src/cart.ts
+index f01075d..703c06e 100644
+--- a/src/cart.ts
++++ b/src/cart.ts
+@@ -40,6 +40,15 @@ export function removeItem(cartId: string, productId: string): Cart | undefined
+   return cart;
+ }
+ 
++// @guide FILE: two small additions that checkout needs: clearCart and totalsFromSubtotal.
++// totals() keeps its behavior, it now delegates to totalsFromSubtotal (pure refactor).
++
++// @guide Empties the cart after a successful checkout (R3). It removes EVERYTHING in the
++// cart, not just the items that were charged.
++// @guide 🟡 Nothing blocks addItem while a checkout waits for the gateway (see
++// CHECKOUT_IN_PROGRESS in orders.ts, it only guards checkout itself). An item added in
++// that window is not charged and not in the order, but this call deletes it. With the
++// fake gateway the window is tiny; with a real provider it is a network round trip.
+ export function clearCart(cartId: string): Cart | undefined {
+   const cart = carts.get(cartId);
+   if (!cart) return undefined;
+@@ -47,6 +56,9 @@ export function clearCart(cartId: string): Cart | undefined {
+   return cart;
+ }
+ 
++// @guide Shipping rule extracted from totals() so checkout can price the snapshot of
++// prices it took, using the same rule as the cart. Same formula as before, verify that the
++// removed lines in totals() are identical (they are).
+ /** Adds flat shipping under the free-shipping threshold; nothing to ship costs nothing. */
+ export function totalsFromSubtotal(subtotalCents: number): CartTotals {
+   const shippingCents =
+diff --git a/src/orders.ts b/src/orders.ts
+index e159456..a593959 100644
+--- a/src/orders.ts
++++ b/src/orders.ts
+@@ -1,3 +1,7 @@
++// @guide FILE: the order service (R1, R3-R8): checkout, get/list, ship and cancel. Orders
++// live in an in-memory Map, like carts and products. It takes the gateway as a parameter,
++// so it does not know which payment provider is used. Read order: checkout (line ~72),
++// then ship/cancel at the bottom.
+ import { clearCart, getCart, totalsFromSubtotal } from "./cart.ts";
+ import type { PaymentGateway } from "./payments.ts";
+ import { findProduct, releaseStock, reserveStock } from "./products.ts";
+@@ -20,6 +24,9 @@ export type CheckoutError =
+ 
+ export type CheckoutResult = { order: Order } | CheckoutError;
+ 
++// @guide Read-only check: returns the product ids whose stock is lower than the quantity
++// wanted (or that no longer exist). Used first so the 409 can list ALL missing products,
++// not only the first one (R1).
+ /** Product ids in `items` that cannot be fully served from the current stock. */
+ function missingStock(items: CartItem[]): string[] {
+   return items
+@@ -30,6 +37,10 @@ function missingStock(items: CartItem[]): string[] {
+     .map((item) => item.productId);
+ }
+ 
++// @guide All-or-nothing (R1): check everything first, then reserve one by one. If a
++// reserve still fails (cannot happen in a single thread, since nothing awaits between
++// the check and the loop) it rolls back what it took. Returns [] on success. Nothing is
++// left reserved when it returns a non-empty list. Looks correct.
+ /** Reserves every item or none of them. */
+ function reserveAll(items: CartItem[]): string[] {
+   const missing = missingStock(items);
+@@ -46,10 +57,14 @@ function reserveAll(items: CartItem[]): string[] {
+   return [];
+ }
+ 
++// @guide Gives the stock of every item back. Used on payment failure and on cancel.
+ function releaseAll(items: { productId: string; qty: number }[]): void {
+   for (const item of items) releaseStock(item.productId, item.qty);
+ }
+ 
++// @guide Builds the order lines with the price at this moment (R8). It is called AFTER
++// the stock was reserved, inside the try block of checkout, so if it throws, the finally
++// releases the stock. The throw is unreachable today (the products were just checked).
+ /** Copies the current catalog price of each item so the order is not affected by later changes. */
+ function snapshotItems(items: CartItem[]): OrderItem[] {
+   return items.map((item) => {
+@@ -65,6 +80,21 @@ function snapshotItems(items: CartItem[]): OrderItem[] {
+   });
+ }
+ 
++// @guide The main flow, in this order:
++//   1. validate the cart (not found / empty / already checking out),
++//   2. reserve all stock or return OUT_OF_STOCK with the ids (R1),
++//   3. charge the gateway for the total of the price snapshot (R2),
++//   4. declined -> PAYMENT_DECLINED; the finally releases the stock (R4),
++//   5. paid -> store the order as "paid" with history, empty the cart (R3, R8).
++// What to check: `paid` is the flag the finally uses. It only turns true after the
++// charge succeeded, so every early return and every throw (gateway error) gives the
++// stock back. Correct. The guard set is added after reserving but with no await between
++// the check on line ~80 and the add, so two checkouts of one cart cannot both pass.
++// @guide 🟡 clearCart (line ~111) removes everything in the cart, but the charge covered
++// only the copy taken at line ~82. Anything added to the cart while the gateway call is
++// pending is deleted without being paid. Only reachable with a slow real gateway.
++// Possible fix: remove only the checked-out lines/quantities, or block addItem while
++// the cart is in `checkoutsInProgress`.
+ /**
+  * Turns a cart into a paid order: reserves stock (all or nothing), charges the card, stores the
+  * order and empties the cart. A declined payment releases the stock again.
+@@ -116,10 +146,14 @@ export async function checkout(
+   }
+ }
+ 
++// @guide Returns the live object from the Map, not a copy. Callers can mutate it; the
++// server only serializes it, so it is fine today.
+ export function getOrder(id: string): Order | undefined {
+   return orders.get(id);
+ }
+ 
++// @guide R5. Oldest first because a Map keeps insertion order. Does not validate the
++// status; the server must reject an unknown ?status= value (check it in S4).
+ /** All orders, oldest first, optionally only those with the given status. */
+ export function listOrders(status?: OrderStatus): Order[] {
+   const all = [...orders.values()];
+@@ -137,11 +171,16 @@ export type OrderTransitionError =
+ 
+ export type OrderTransitionResult = { order: Order } | OrderTransitionError;
+ 
++// @guide The only place that changes the status. It keeps `status` and the last history
++// entry in sync (R8).
+ function setStatus(order: Order, status: OrderStatus): void {
+   order.status = status;
+   order.history.push({ status, at: now() });
+ }
+ 
++// @guide Common rule for ship and cancel (R6, R7): the order must exist, be "paid", and
++// have no refund pending. The in-progress check is what stops a ship from sneaking in
++// while a cancel waits for the gateway.
+ function paidOrder(id: string): { order: Order } | OrderTransitionError {
+   const order = orders.get(id);
+   if (!order) return { error: "ORDER_NOT_FOUND" };
+@@ -150,6 +189,8 @@ function paidOrder(id: string): { order: Order } | OrderTransitionError {
+   return { order };
+ }
+ 
++// @guide R6. Synchronous: validate and change the status in one step, so there is no
++// window between check and change. A shipped or cancelled order gives ORDER_NOT_PAID.
+ export function shipOrder(id: string): OrderTransitionResult {
+   const found = paidOrder(id);
+   if ("error" in found) return found;
+@@ -157,6 +198,12 @@ export function shipOrder(id: string): OrderTransitionResult {
+   return found;
+ }
+ 
++// @guide R7. Flow: validate, mark the cancel as in progress, refund, then give the stock
++// back and set "cancelled". If the refund fails the order stays "paid" with its stock
++// untouched (REFUND_FAILED), which is the safe choice. If the gateway THROWS, the
++// finally clears the guard and the error goes up, order still "paid"; nothing was
++// changed, so a retry is possible. The guard also makes a double cancel safe: the second
++// call gets CANCELLATION_IN_PROGRESS and never a double stock return.
+ /** Cancels a paid order: refunds the payment and puts the items back into stock. */
+ export async function cancelOrder(
+   id: string,
+diff --git a/src/payments.ts b/src/payments.ts
+index d8d4227..326786e 100644
+--- a/src/payments.ts
++++ b/src/payments.ts
+@@ -1,3 +1,5 @@
++// @guide FILE: the PaymentGateway port (interface) and its in-memory fake (R2). orders.ts
++// only depends on the interface, so a real provider can replace the fake later.
+ import { newId, now } from "./utils.ts";
+ 
+ export interface ChargeRequest {
+@@ -11,6 +13,8 @@ export type ChargeResult = { ok: true; paymentId: string } | { ok: false; reason
+ 
+ export type RefundResult = { ok: true; refundId: string } | { ok: false; reason: string };
+ 
++// @guide The port. Declines come back as { ok: false } values, not exceptions; the
++// callers rely on that, but they also clean up if a real adapter throws.
+ /** Port for whatever payment provider we end up using. */
+ export interface PaymentGateway {
+   charge(request: ChargeRequest): Promise<ChargeResult>;
+@@ -34,6 +38,9 @@ export const DECLINED_TOKEN_PREFIX = "tok_declined";
+ export class FakePaymentGateway implements PaymentGateway {
+   private readonly payments = new Map<string, FakePayment>();
+ 
++  // @guide Declines tokens starting with "tok_declined" (as the ticket says), refuses
++  // amounts <= 0, otherwise records the payment and returns its id. The decline check
++  // comes first, so a declined token never creates a payment.
+   async charge(request: ChargeRequest): Promise<ChargeResult> {
+     if (request.cardToken.startsWith(DECLINED_TOKEN_PREFIX)) {
+       return { ok: false, reason: "CARD_DECLINED" };
+@@ -51,6 +58,9 @@ export class FakePaymentGateway implements PaymentGateway {
+     return { ok: true, paymentId: payment.id };
+   }
+ 
++  // @guide Refunds a payment once: unknown id -> PAYMENT_NOT_FOUND, second refund of the
++  // same payment -> ALREADY_REFUNDED. The always-full amount matches the ticket (no
++  // partial refunds).
+   async refund(paymentId: string): Promise<RefundResult> {
+     const payment = this.payments.get(paymentId);
+     if (!payment) return { ok: false, reason: "PAYMENT_NOT_FOUND" };
+@@ -59,6 +69,7 @@ export class FakePaymentGateway implements PaymentGateway {
+     return { ok: true, refundId: payment.refundId };
+   }
+ 
++  // @guide Only for tests; production code should not call it.
+   /** Test helper: what the gateway knows about a payment. */
+   find(paymentId: string): Readonly<FakePayment> | undefined {
+     return this.payments.get(paymentId);
+diff --git a/src/products.ts b/src/products.ts
+index 321b66a..c20c95f 100644
+--- a/src/products.ts
++++ b/src/products.ts
+@@ -23,6 +23,10 @@ export function reserveStock(id: string, qty: number): boolean {
+   return true;
+ }
+ 
++// @guide FILE: adds the inverse of reserveStock, used on payment failure (R4) and on
++// cancel (R7).
++// @guide Adds `qty` back. An unknown product id is silently ignored, so a release can
++// never fail; fine as long as products cannot be deleted (nothing deletes them today).
+ /** Puts `qty` units back into stock, e.g. after a failed payment or a cancelled order. */
+ export function releaseStock(id: string, qty: number): void {
+   const product = findProduct(id);
+diff --git a/src/server.ts b/src/server.ts
+index b96e20f..c4e0558 100644
+--- a/src/server.ts
++++ b/src/server.ts
+@@ -1,3 +1,7 @@
++// @guide FILE: the HTTP layer for SHOP-31. It adds POST /carts/:id/checkout and the /orders
++// routes, and turns the result values of orders.ts into status codes. No business logic
++// here: if a rule is missing, it belongs in orders.ts (S1). The gateway is now injected
++// (createShopServer) so tests can choose how payments behave.
+ import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+ import { addItem, createCart, getCart, removeItem, totals } from "./cart.ts";
+ import {
+@@ -17,6 +21,9 @@ import { formatCents, isPositiveInt, readJson } from "./utils.ts";
+ 
+ const CATEGORIES = ["books", "games", "music"];
+ 
++// @guide Checkout error -> HTTP status. The ticket asks for 409 OUT_OF_STOCK and 402
++// PAYMENT_DECLINED; both are here. Typed as Record over the error union, so adding a new
++// checkout error without a status would not compile. CART_EMPTY is 400, an own choice.
+ const CHECKOUT_ERROR_STATUS: Record<CheckoutError["error"], number> = {
+   CART_NOT_FOUND: 404,
+   CART_EMPTY: 400,
+@@ -37,10 +44,16 @@ function cartView(cartId: string) {
+   return { ...cart, ...t, total: formatCents(t.totalCents) };
+ }
+ 
++// @guide JSON shape of an order: the stored order plus a formatted total, same style as
++// cartView. It returns everything, including paymentId and refundId; the card token is
++// never stored, so nothing sensitive leaks.
+ function orderView(order: Order) {
+   return { ...order, total: formatCents(order.totalCents) };
+ }
+ 
++// @guide Answer for ship and cancel: 200 with the order; ORDER_NOT_FOUND 404;
++// REFUND_FAILED 502 (the provider failed, not the client); everything else 409 (not paid,
++// or cancellation in progress). Matches R6/R7.
+ function sendTransition(res: ServerResponse, result: OrderTransitionResult): void {
+   if ("order" in result) return send(res, 200, orderView(result.order));
+   const status =
+@@ -48,6 +61,15 @@ function sendTransition(res: ServerResponse, result: OrderTransitionResult): voi
+   send(res, status, result);
+ }
+ 
++// @guide The four /orders routes (R5-R7), matched by method and number of path parts:
++//   GET /orders[?status=]   list; an unknown status gives 400 UNKNOWN_STATUS (this closes
++//                           the check left open in S1, listOrders does not validate)
++//   GET /orders/:id         one order or 404
++//   POST /orders/:id/ship   shipOrder
++//   POST /orders/:id/cancel cancelOrder (awaits the gateway)
++// Anything else returns false so route() answers 404 NOT_FOUND. Checked: wrong method or
++// extra path parts end in 404, never in a wrong handler. An empty `?status=` counts as
++// no filter and lists everything.
+ /** Handles /orders routes. Returns false when nothing matched. */
+ async function routeOrders(
+   req: IncomingMessage,
+@@ -84,6 +106,9 @@ async function routeOrders(
+   return false;
+ }
+ 
++// @guide Same router as before, now with the gateway as a third parameter, the checkout
++// branch and the hand-off to routeOrders. Errors thrown here (bad JSON, a gateway that
++// throws) are caught in createShopServer and become 500 INTERNAL.
+ async function route(
+   req: IncomingMessage,
+   res: ServerResponse,
+@@ -126,6 +151,15 @@ async function route(
+         ? send(res, 200, cartView(cartId))
+         : send(res, 404, { error: "CART_NOT_FOUND" });
+     }
++    // @guide R1-R4 entry point. Reads { cardToken }, answers 201 with the order, or the
++    // status of CHECKOUT_ERROR_STATUS with the error object (409 carries productIds, 402
++    // carries the reason).
++    // @guide 🟡 A body of JSON `null` (curl -d null) makes `body.cardToken` throw a
++    // TypeError, so the client gets 500 INTERNAL instead of 400 INVALID_PAYMENT. The
++    // items route above has the same pattern, so it is consistent, just not great.
++    // @guide ❓ The token is checked with trim() but sent untrimmed: " tok_declined" passes
++    // validation and the fake (startsWith) accepts it as a good card. Irrelevant for a
++    // real provider; it only matters if someone tests declines with a padded token.
+     if (req.method === "POST" && parts[2] === "checkout" && parts.length === 3) {
+       const body = (await readJson(req)) as { cardToken?: unknown };
+       if (typeof body.cardToken !== "string" || body.cardToken.trim() === "") {
+@@ -142,6 +176,11 @@ async function route(
+   send(res, 404, { error: "NOT_FOUND" });
+ }
+ 
++// @guide Replaces the old `server` constant with a factory so a test can inject a
++// gateway; `server` is still exported with the fake, so existing imports keep working.
++// Note: carts, orders and stock are module-level, only the gateway is per server, so two
++// servers share orders but not payments (a cancel through the other server's fake would
++// fail with PAYMENT_NOT_FOUND). Fine for tests with one server.
+ /** Builds the HTTP server; tests pass their own gateway to control payment outcomes. */
+ export function createShopServer(gateway: PaymentGateway = new FakePaymentGateway()) {
+   return createServer((req, res) => {
+diff --git a/src/types.ts b/src/types.ts
+index e664ce7..5c8df53 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -23,8 +23,15 @@ export interface CartTotals {
+   totalCents: number;
+ }
+ 
++// @guide FILE: data model of an order (R8). Only types, no logic. Everything in orders.ts
++// is built on these, so read them first.
++
++// @guide The three states from the ticket. There is no "pending": an order only exists
++// once the payment went through (checkout creates it directly as "paid").
+ export type OrderStatus = "paid" | "shipped" | "cancelled";
+ 
++// @guide One line of the order. The name and prices are COPIED from the catalog at
++// checkout, so a later price change does not rewrite old orders (R8).
+ export interface OrderItem {
+   productId: string;
+   name: string;
+@@ -34,11 +41,16 @@ export interface OrderItem {
+   lineTotalCents: number;
+ }
+ 
++// @guide One entry of the status history with its ISO timestamp (R8).
+ export interface StatusChange {
+   status: OrderStatus;
+   at: string;
+ }
+ 
++// @guide The order: the totals (subtotal/shipping/total) are stored, not recomputed.
++// paymentId is required, refundId only appears after a cancel. The history starts with
++// "paid" and the current `status` must always equal the last history entry (check that
++// in orders.ts: setStatus is the only place that changes it).
+ export interface Order extends CartTotals {
+   id: string;
+   cartId: string;
+diff --git a/tests/cart.test.ts b/tests/cart.test.ts
+index 1c05c8a..bcd74d7 100644
+--- a/tests/cart.test.ts
++++ b/tests/cart.test.ts
+@@ -34,6 +34,10 @@ test("removes an item", () => {
+   assert.deepEqual(cart.items, []);
+ });
+ 
++// @guide FILE (change): adds the clearCart import and one test for the new clearCart
++// (src/cart.ts). Everything else in this file is unchanged.
++// @guide Fills a cart with two products, clears it and expects an empty list; unknown cart
++// returns undefined. It does not cover the 🟡 of S1 (clearing while a checkout is pending).
+ test("clears a cart", () => {
+   const cart = createCart();
+   addItem(cart.id, "p-1", 1);
+diff --git a/tests/orders-api.test.ts b/tests/orders-api.test.ts
+index adcd6f0..d32bf5f 100644
+--- a/tests/orders-api.test.ts
++++ b/tests/orders-api.test.ts
+@@ -1,3 +1,12 @@
++// @guide FILE: end-to-end tests of the new routes (S4) over real HTTP. One server on a
++// random port with one shared FakePaymentGateway, so the tests can also ask the gateway
++// what happened (refund recorded). Stock and orders are module state shared by all the
++// tests in the file, which run in order; p-3 starts at 30 and this file uses only a few.
++// Covers the HTTP side of R1, R4, R5, R6, R7.
++// @guide 🟡 Not covered here: the 502 REFUND_FAILED mapping (needs a gateway that fails
++// refunds; createShopServer accepts one, so it is easy to add), 409 for
++// CHECKOUT_IN_PROGRESS / CANCELLATION_IN_PROGRESS, `?status=cancelled` and `?status=shipped`
++// lists, cancel of an unknown order (404), and the `null` body case from S4.
+ import assert from "node:assert/strict";
+ import type { AddressInfo } from "node:net";
+ import { after, before, test } from "node:test";
+@@ -5,6 +14,7 @@ import { FakePaymentGateway } from "../src/payments.ts";
+ import { findProduct } from "../src/products.ts";
+ import { createShopServer } from "../src/server.ts";
+ 
++// @guide Setup: server on port 0 (free port), closed in `after` so the test process ends.
+ const gateway = new FakePaymentGateway();
+ const server = createShopServer(gateway);
+ let baseUrl = "";
+@@ -19,6 +29,8 @@ after(() => {
+   server.close();
+ });
+ 
++// @guide Helpers: call() returns { status, body } parsed as JSON; cartWith() builds a cart
++// through the API; checkout() makes a cart (default: one p-3) and checks it out.
+ async function call(method: string, path: string, body?: unknown) {
+   const res = await fetch(baseUrl + path, {
+     method,
+@@ -42,6 +54,8 @@ async function checkout(cardToken = "tok_visa", ...items: [string, number][]) {
+   return call("POST", `/carts/${cartId}/checkout`, { cardToken });
+ }
+ 
++// @guide Happy path over HTTP: 201, paid, total 6998 (3999 + 2999, over the free-shipping
++// line), formatted "$69.98", payment id, one history entry, and the cart is empty after.
+ test("POST /carts/:id/checkout answers 201 with the order and empties the cart", async () => {
+   const cartId = await cartWith(["p-1", 1], ["p-3", 1]);
+   const res = await call("POST", `/carts/${cartId}/checkout`, { cardToken: "tok_visa" });
+@@ -56,6 +70,8 @@ test("POST /carts/:id/checkout answers 201 with the order and empties the cart",
+   assert.deepEqual(cart.body.items, []);
+ });
+ 
++// @guide Body validation: missing, empty and non-string tokens give 400 INVALID_PAYMENT.
++// A `null` body or a whitespace-only token are not tried (see S4 findings).
+ test("checkout needs a card token", async () => {
+   const cartId = await cartWith(["p-3", 1]);
+   for (const body of [{}, { cardToken: "" }, { cardToken: 42 }]) {
+@@ -65,6 +81,7 @@ test("checkout needs a card token", async () => {
+   }
+ });
+ 
++// @guide Unknown cart 404, empty cart 400 CART_EMPTY (the 404 body is not checked).
+ test("checkout of an unknown cart is 404 and of an empty cart is 400", async () => {
+   const missing = await call("POST", "/carts/cart-nope/checkout", { cardToken: "tok_visa" });
+   assert.equal(missing.status, 404);
+@@ -74,6 +91,9 @@ test("checkout of an unknown cart is 404 and of an empty cart is 400", async ()
+   assert.deepEqual(res.body, { error: "CART_EMPTY" });
+ });
+ 
++// @guide R1 over HTTP: p-2 stock set to 0 after the cart was built; expects exactly
++// 409 { error: "OUT_OF_STOCK", productIds: ["p-2"] }. Stock restored in a finally. Again
++// only one missing id.
+ test("checkout answers 409 OUT_OF_STOCK with the product ids", async () => {
+   const cartId = await cartWith(["p-2", 1], ["p-3", 1]);
+   const p2 = findProduct("p-2")!;
+@@ -88,6 +108,8 @@ test("checkout answers 409 OUT_OF_STOCK with the product ids", async () => {
+   }
+ });
+ 
++// @guide R4 over HTTP: "tok_declined" gives 402 PAYMENT_DECLINED and the stock is the same
++// as before.
+ test("a declined card answers 402 PAYMENT_DECLINED", async () => {
+   const stock = findProduct("p-3")!.stock;
+   const res = await checkout("tok_declined");
+@@ -96,6 +118,7 @@ test("a declined card answers 402 PAYMENT_DECLINED", async () => {
+   assert.equal(findProduct("p-3")!.stock, stock);
+ });
+ 
++// @guide R5: the stored order comes back by id; an unknown id is 404 ORDER_NOT_FOUND.
+ test("GET /orders/:id returns the order or 404", async () => {
+   const { body: order } = await checkout();
+   const res = await call("GET", `/orders/${order.id}`);
+@@ -107,6 +130,9 @@ test("GET /orders/:id returns the order or 404", async () => {
+   });
+ });
+ 
++// @guide R5: `?status=paid` includes the paid order and excludes the shipped one; the
++// plain list has at least two; `?status=lost` is 400. Fine, but only "paid" is filtered:
++// "shipped" and "cancelled" are never requested over HTTP.
+ test("GET /orders filters by status and rejects unknown statuses", async () => {
+   const { body: paid } = await checkout();
+   const { body: shipped } = await checkout();
+@@ -126,6 +152,8 @@ test("GET /orders filters by status and rejects unknown statuses", async () => {
+   });
+ });
+ 
++// @guide R6: ship once gives 200 "shipped", twice gives 409 ORDER_NOT_PAID with the status,
++// unknown id gives 404.
+ test("POST /orders/:id/ship ships paid orders only", async () => {
+   const { body: order } = await checkout();
+   const shipped = await call("POST", `/orders/${order.id}/ship`);
+@@ -138,6 +166,8 @@ test("POST /orders/:id/ship ships paid orders only", async () => {
+   assert.equal((await call("POST", "/orders/order-nope/ship")).status, 404);
+ });
+ 
++// @guide R7 over HTTP: 2 units taken, cancel gives 200 "cancelled", the shared gateway
++// recorded a refund for that payment, stock back to the start, history paid->cancelled.
+ test("POST /orders/:id/cancel refunds and returns the stock", async () => {
+   const stock = findProduct("p-3")!.stock;
+   const { body: order } = await checkout("tok_visa", ["p-3", 2]);
+@@ -154,6 +184,7 @@ test("POST /orders/:id/cancel refunds and returns the stock", async () => {
+   );
+ });
+ 
++// @guide R7 "paid only": cancelling a shipped order is 409 ORDER_NOT_PAID.
+ test("a shipped order cannot be cancelled", async () => {
+   const { body: order } = await checkout();
+   await call("POST", `/orders/${order.id}/ship`);
+@@ -162,6 +193,8 @@ test("a shipped order cannot be cancelled", async () => {
+   assert.equal(res.body.error, "ORDER_NOT_PAID");
+ });
+ 
++// @guide Router safety: an unknown action and a wrong method on /orders both fall through
++// to 404 (routeOrders returns false).
+ test("unknown order routes are 404", async () => {
+   assert.equal((await call("POST", "/orders/x/refund")).status, 404);
+   assert.equal((await call("DELETE", "/orders")).status, 404);
+diff --git a/tests/orders.test.ts b/tests/orders.test.ts
+index 4b200ec..dc413a4 100644
+--- a/tests/orders.test.ts
++++ b/tests/orders.test.ts
+@@ -1,3 +1,8 @@
++// @guide FILE: tests of the order service (src/orders.ts), no HTTP. They use the real cart
++// and product modules and the real FakePaymentGateway; node:test runs the tests of one
++// file in order, and they share the same in-memory stock (p-3 starts at 30 and the
++// whole file uses about 13 units, so there is room). Covers R1-R4, R6-R8.
++// The tests that need to control timing use PendingGateway (below).
+ import assert from "node:assert/strict";
+ import { test } from "node:test";
+ import { addItem, createCart, getCart } from "../src/cart.ts";
+@@ -12,6 +17,8 @@ import {
+ import { findProduct } from "../src/products.ts";
+ import type { Order } from "../src/types.ts";
+ 
++// @guide Helpers. cartWith builds a cart and fails the test if addItem returned an error
++// string. paidOrder runs a successful checkout and returns the order.
+ const stockOf = (id: string) => findProduct(id)?.stock;
+ 
+ function cartWith(...items: [productId: string, qty: number][]): string {
+@@ -29,6 +36,9 @@ async function paidOrder(gateway: PaymentGateway, ...items: [string, number][]):
+   return result.order;
+ }
+ 
++// @guide Test double: charge/refund return a promise that the test resolves by hand
++// (gateway.charges[0](...)). This is what lets the tests look at the state "while the
++// gateway is still working", which is where the guards live.
+ /** Gateway whose charges and refunds stay pending until the test resolves them. */
+ class PendingGateway implements PaymentGateway {
+   charges: ((result: ChargeResult) => void)[] = [];
+@@ -43,6 +53,9 @@ class PendingGateway implements PaymentGateway {
+   }
+ }
+ 
++// @guide Happy path (R3, R8): items with name/price/line total, subtotal 9997 >= 5000 so
++// no shipping, the gateway was charged exactly the total, history is just ["paid"], and
++// getOrder returns the stored order. Solid; the amounts are written out, not computed.
+ test("checkout creates a paid order with the prices and totals at checkout time", async () => {
+   const gateway = new FakePaymentGateway();
+   const cartId = cartWith(["p-3", 2], ["p-1", 1]);
+@@ -73,12 +86,15 @@ test("checkout creates a paid order with the prices and totals at checkout time"
+   assert.equal(getOrder(order.id), order);
+ });
+ 
++// @guide Below the free-shipping threshold: 2999 + 499. Only checks one side; the
++// threshold itself (exactly 5000) is tested in the cart tests, not here.
+ test("checkout charges shipping on small orders", async () => {
+   const order = await paidOrder(new FakePaymentGateway(), ["p-3", 1]);
+   assert.equal(order.shippingCents, 499);
+   assert.equal(order.totalCents, 2999 + 499);
+ });
+ 
++// @guide R1 + R3: stock goes down by the quantity and the cart ends up empty.
+ test("checkout reserves the stock and empties the cart", async () => {
+   const before = stockOf("p-3")!;
+   const cartId = cartWith(["p-3", 3]);
+@@ -87,6 +103,9 @@ test("checkout reserves the stock and empties the cart", async () => {
+   assert.deepEqual(getCart(cartId)?.items, []);
+ });
+ 
++// @guide R8 snapshot: changes the catalog price AFTER the order and checks the stored
++// price stays. It restores the price in a finally, good. It would fail if the order
++// looked the price up again when read.
+ test("the order keeps its price when the catalog price changes later", async () => {
+   const order = await paidOrder(new FakePaymentGateway(), ["p-1", 1]);
+   const product = findProduct("p-1")!;
+@@ -99,6 +118,10 @@ test("the order keeps its price when the catalog price changes later", async ()
+   }
+ });
+ 
++// @guide R1 all or nothing: the cart is valid when built, then p-2 stock drops to 1 (the
++// cart wants 2). Expects 409 with only p-2, p-3 stock untouched, cart untouched.
++// @guide 🟡 Only ONE product is missing here, so it does not prove the answer lists all
++// missing ids (the ticket says "the product ids"). Add a case with two missing products.
+ test("checkout reserves nothing when any item lacks stock", async () => {
+   const cartId = cartWith(["p-3", 1], ["p-2", 2]);
+   // Someone else buys the remaining copies of p-2 after this cart was filled.
+@@ -117,6 +140,8 @@ test("checkout reserves nothing when any item lacks stock", async () => {
+   }
+ });
+ 
++// @guide R4: a "tok_declined_card" token gives PAYMENT_DECLINED, the stock is back, the
++// cart keeps its items (not emptied) and no order was stored.
+ test("a declined payment releases the stock and keeps the cart", async () => {
+   const before = stockOf("p-3");
+   const cartId = cartWith(["p-3", 2]);
+@@ -128,6 +153,9 @@ test("a declined payment releases the stock and keeps the cart", async () => {
+   assert.equal(listOrders().length, ordersBefore);
+ });
+ 
++// @guide The gateway throws instead of declining: the stock must still come back.
++// @guide 🟡 It does not check that the cart can be checked out again afterwards (that
++// the in-progress guard was cleared) nor that the cart still has its items.
+ test("a gateway error releases the stock before it propagates", async () => {
+   const before = stockOf("p-3");
+   const broken: PaymentGateway = {
+@@ -140,12 +168,16 @@ test("a gateway error releases the stock before it propagates", async () => {
+   assert.equal(stockOf("p-3"), before);
+ });
+ 
++// @guide Input errors: unknown cart and empty cart, no stock or gateway involved.
+ test("checkout rejects unknown and empty carts", async () => {
+   const gateway = new FakePaymentGateway();
+   assert.deepEqual(await checkout("cart-nope", "tok_visa", gateway), { error: "CART_NOT_FOUND" });
+   assert.deepEqual(await checkout(createCart().id, "tok_visa", gateway), { error: "CART_EMPTY" });
+ });
+ 
++// @guide Double submit: the first checkout waits at the gateway (it runs synchronously up
++// to the first await, so the guard is already set), the second gets CHECKOUT_IN_PROGRESS,
++// and the gateway saw exactly one charge. Good test of the guard.
+ test("the same cart cannot be checked out twice at once", async () => {
+   const gateway = new PendingGateway();
+   const cartId = cartWith(["p-3", 1]);
+@@ -159,6 +191,8 @@ test("the same cart cannot be checked out twice at once", async () => {
+   assert.equal(gateway.charges.length, 1);
+ });
+ 
++// @guide R6 + R8: shipping a paid order gives "shipped", history ["paid","shipped"] and
++// every timestamp is a parseable date.
+ test("ships a paid order and records the change", async () => {
+   const order = await paidOrder(new FakePaymentGateway(), ["p-3", 1]);
+   const result = shipOrder(order.id);
+@@ -171,6 +205,8 @@ test("ships a paid order and records the change", async () => {
+   assert.ok(result.order.history.every((h) => !Number.isNaN(Date.parse(h.at))));
+ });
+ 
++// @guide R6: shipping twice gives ORDER_NOT_PAID with the current status; unknown id gives
++// ORDER_NOT_FOUND. A cancelled order is not tried here (it is in the cancel tests).
+ test("only paid orders can be shipped", async () => {
+   const gateway = new FakePaymentGateway();
+   const order = await paidOrder(gateway, ["p-3", 1]);
+@@ -179,6 +215,8 @@ test("only paid orders can be shipped", async () => {
+   assert.deepEqual(shipOrder("order-nope"), { error: "ORDER_NOT_FOUND" });
+ });
+ 
++// @guide R7 happy path: status cancelled, refund id stored on the order AND recorded by
++// the gateway for that payment, stock back to the initial value, history paid->cancelled.
+ test("cancelling refunds the payment and returns the stock", async () => {
+   const gateway = new FakePaymentGateway();
+   const before = stockOf("p-3")!;
+@@ -197,6 +235,9 @@ test("cancelling refunds the payment and returns the stock", async () => {
+   );
+ });
+ 
++// @guide R7 "paid orders only": shipped -> rejected; cancelled twice -> rejected and the
++// stock is not returned a second time (the key check against double restock).
++// @guide 🟡 Unknown order id on cancel (ORDER_NOT_FOUND) is not tested; only ship tests it.
+ test("shipped and cancelled orders cannot be cancelled", async () => {
+   const gateway = new FakePaymentGateway();
+   const shipped = await paidOrder(gateway, ["p-3", 1]);
+@@ -216,6 +257,10 @@ test("shipped and cancelled orders cannot be cancelled", async () => {
+   assert.equal(stockOf("p-3"), stock, "stock must not be returned twice");
+ });
+ 
++// @guide Refund fails (a second gateway that never saw the payment answers
++// PAYMENT_NOT_FOUND): the order stays "paid" and the stock is not returned. A neat way to
++// get a failing refund without a mock.
++// @guide 🟡 Refund that THROWS is not covered (cancelOrder's finally must clear its guard).
+ test("a failed refund leaves the order paid and the stock reserved", async () => {
+   const order = await paidOrder(new FakePaymentGateway(), ["p-3", 1]);
+   const stock = stockOf("p-3");
+@@ -226,6 +271,8 @@ test("a failed refund leaves the order paid and the stock reserved", async () =>
+   assert.equal(stockOf("p-3"), stock);
+ });
+ 
++// @guide While the refund is pending, ship and a second cancel are both rejected with
++// CANCELLATION_IN_PROGRESS; after the refund resolves the first cancel completes.
+ test("an order being cancelled can be neither shipped nor cancelled again", async () => {
+   const order = await paidOrder(new FakePaymentGateway(), ["p-3", 1]);
+   const gateway = new PendingGateway();
+@@ -238,6 +285,12 @@ test("an order being cancelled can be neither shipped nor cancelled again", asyn
+   assert.equal(result.order.status, "cancelled");
+ });
+ 
++// @guide R5 filter. The first two checks are real (a paid and a shipped order each show
++// up only in their own list).
++// @guide 🟡 The last two assertions cannot fail: `listOrders("cancelled").every(status ===
++// "cancelled")` is true by construction of the filter (and for an empty list), and
++// "ids are unique" is always true because orders live in a Map keyed by id. Better: cancel
++// an order here and check it is in listOrders("cancelled") and not in the others.
+ test("lists orders by status", async () => {
+   const gateway = new FakePaymentGateway();
+   const paid = await paidOrder(gateway, ["p-3", 1]);
+diff --git a/tests/payments.test.ts b/tests/payments.test.ts
+index f9485bd..2955979 100644
+--- a/tests/payments.test.ts
++++ b/tests/payments.test.ts
+@@ -1,7 +1,10 @@
++// @guide FILE: unit tests of FakePaymentGateway (src/payments.ts), one behavior per test (R2).
++// The fake is the thing the order tests trust, so it is worth having it pinned down.
+ import assert from "node:assert/strict";
+ import { test } from "node:test";
+ import { FakePaymentGateway } from "../src/payments.ts";
+ 
++// @guide Accepted card: ok, id with the "pay-" prefix, and the gateway remembers the amount.
+ test("charges an accepted card and remembers the payment", async () => {
+   const gateway = new FakePaymentGateway();
+   const result = await gateway.charge({ amountCents: 1500, cardToken: "tok_visa", reference: "c" });
+@@ -11,6 +14,9 @@ test("charges an accepted card and remembers the payment", async () => {
+   assert.equal(gateway.find(result.paymentId)?.amountCents, 1500);
+ });
+ 
++// @guide The ticket rule: "tok_declined" and a longer token with that prefix are both
++// declined. Does not check that a declined charge leaves no payment behind, nor a token
++// that only CONTAINS the text (e.g. "x_tok_declined"); minor.
+ test("declines card tokens starting with tok_declined", async () => {
+   const gateway = new FakePaymentGateway();
+   for (const cardToken of ["tok_declined", "tok_declined_insufficient_funds"]) {
+@@ -19,12 +25,16 @@ test("declines card tokens starting with tok_declined", async () => {
+   }
+ });
+ 
++// @guide Amount 0 gives INVALID_AMOUNT. This is a guard that checkout can reach only with
++// free items; not part of the ticket, harmless.
+ test("refuses to charge nothing", async () => {
+   const gateway = new FakePaymentGateway();
+   const result = await gateway.charge({ amountCents: 0, cardToken: "tok_visa", reference: "c" });
+   assert.deepEqual(result, { ok: false, reason: "INVALID_AMOUNT" });
+ });
+ 
++// @guide R7 building block: the first refund is ok, the second of the same payment is
++// ALREADY_REFUNDED.
+ test("refunds a payment once", async () => {
+   const gateway = new FakePaymentGateway();
+   const charge = await gateway.charge({ amountCents: 900, cardToken: "tok_visa", reference: "c" });
+@@ -37,6 +47,8 @@ test("refunds a payment once", async () => {
+   });
+ });
+ 
++// @guide Unknown payment id gives PAYMENT_NOT_FOUND (the orders test uses this to force a
++// failed refund).
+ test("cannot refund an unknown payment", async () => {
+   const gateway = new FakePaymentGateway();
+   assert.deepEqual(await gateway.refund("pay-nope"), { ok: false, reason: "PAYMENT_NOT_FOUND" });
+diff --git a/tests/products.test.ts b/tests/products.test.ts
+index a8dee7e..d73507f 100644
+--- a/tests/products.test.ts
++++ b/tests/products.test.ts
+@@ -14,6 +14,10 @@ test("reserves stock only when there is enough", () => {
+   assert.equal(reserveStock("p-3", 2), true);
+ });
+ 
++// @guide FILE (change): imports findProduct/releaseStock and adds one test; the rest of
++// the file is unchanged.
++// @guide Reserve 3 then release 3 gives the original stock. It does not try an unknown
++// product id (which releaseStock ignores silently); trivial.
+ test("releasing stock puts the units back", () => {
+   const before = findProduct("p-1")!.stock;
+   reserveStock("p-1", 3);

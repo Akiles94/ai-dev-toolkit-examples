@@ -1,0 +1,29 @@
+diff --git a/src/server.ts b/src/server.ts
+index b16ecde..bfa77be 100644
+--- a/src/server.ts
++++ b/src/server.ts
+@@ -1,5 +1,7 @@
+ import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
++import { listAlerts, LOW_STOCK_THRESHOLD } from "./alerts.ts";
+ import { addItem, createCart, getCart, removeItem, totals } from "./cart.ts";
++import { lowStockProducts } from "./low-stock.ts";
+ import { listProducts } from "./products.ts";
+ import type { Product } from "./types.ts";
+ import { formatCents, isPositiveInt, readJson } from "./utils.ts";
+@@ -30,6 +32,16 @@ async function route(req: IncomingMessage, res: ServerResponse): Promise<void> {
+     return send(res, 200, listProducts(category as Product["category"] | undefined));
+   }
+ 
++  // @guide: Read-only admin routes with no access control, by decision (spec: out of scope).
++  // @guide: Both just serialize the S1 domain functions; no logic lives in the HTTP layer.
++  if (req.method === "GET" && url.pathname === "/admin/low-stock") {
++    return send(res, 200, { threshold: LOW_STOCK_THRESHOLD, products: lowStockProducts() });
++  }
++
++  if (req.method === "GET" && url.pathname === "/admin/alerts") {
++    return send(res, 200, listAlerts());
++  }
++
+   if (req.method === "POST" && url.pathname === "/carts") {
+     return send(res, 201, createCart());
+   }
