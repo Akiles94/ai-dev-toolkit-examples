@@ -1,0 +1,12 @@
+{
+  "name": "shop-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A small shop API used to show what AI Dev Toolkit agents produce.",
+  "type": "module",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "start": "node src/server.ts",
+    "test": "node --test \"tests/**/*.test.ts\""
+  }
+}
