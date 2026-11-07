@@ -22,3 +22,9 @@ export function reserveStock(id: string, qty: number): boolean {
   product.stock -= qty;
   return true;
 }
+
+/** Puts `qty` units back into stock, e.g. after a failed payment or a cancelled order. */
+export function releaseStock(id: string, qty: number): void {
+  const product = findProduct(id);
+  if (product) product.stock += qty;
+}

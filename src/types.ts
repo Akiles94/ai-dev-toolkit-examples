@@ -22,3 +22,30 @@ export interface CartTotals {
   shippingCents: number;
   totalCents: number;
 }
+
+export type OrderStatus = "paid" | "shipped" | "cancelled";
+
+export interface OrderItem {
+  productId: string;
+  name: string;
+  /** Unit price at checkout time; later catalog changes do not affect the order. */
+  unitPriceCents: number;
+  qty: number;
+  lineTotalCents: number;
+}
+
+export interface StatusChange {
+  status: OrderStatus;
+  at: string;
+}
+
+export interface Order extends CartTotals {
+  id: string;
+  cartId: string;
+  items: OrderItem[];
+  status: OrderStatus;
+  paymentId: string;
+  refundId?: string;
+  history: StatusChange[];
+  createdAt: string;
+}
