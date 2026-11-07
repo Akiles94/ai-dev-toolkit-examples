@@ -18,7 +18,12 @@ test("refuses more units than in stock, counting what is already in the cart", (
 test("charges shipping under $50 and not from $50", () => {
   const cart = createCart();
   addItem(cart.id, "p-3", 1);
-  assert.deepEqual(totals(cart), { subtotalCents: 2999, shippingCents: 499, totalCents: 3498 });
+  assert.deepEqual(totals(cart), {
+    subtotalCents: 2999,
+    discountCents: 0,
+    shippingCents: 499,
+    totalCents: 3498,
+  });
   addItem(cart.id, "p-1", 1);
   assert.equal(totals(cart).shippingCents, 0);
 });

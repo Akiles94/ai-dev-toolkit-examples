@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { addItem, createCart, getCart, removeItem, totals } from "./cart.ts";
+import { addItem, applyCode, createCart, getCart, removeItem, totals } from "./cart.ts";
 import { listProducts } from "./products.ts";
 import type { Product } from "./types.ts";
 import { formatCents, isPositiveInt, readJson } from "./utils.ts";
@@ -49,6 +49,14 @@ async function route(req: IncomingMessage, res: ServerResponse): Promise<void> {
       if (typeof result === "string") {
         return send(res, result === "OUT_OF_STOCK" ? 409 : 404, { error: result });
       }
+      return send(res, 200, cartView(cartId));
+    }
+    if (req.method === "POST" && parts[2] === "discount") {
+      const body = (await readJson(req)) as { code?: unknown };
+      if (typeof body.code !== "string") return send(res, 400, { error: "INVALID_CODE" });
+      const result = applyCode(cartId, body.code);
+      if (result === "CART_NOT_FOUND") return send(res, 404, { error: result });
+      if (typeof result === "string") return send(res, 400, { error: result });
       return send(res, 200, cartView(cartId));
     }
     if (req.method === "DELETE" && parts[2] === "items" && parts[3]) {
