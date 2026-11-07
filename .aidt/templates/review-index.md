@@ -22,6 +22,7 @@
 | Tests | {{testLines}} lines |
 | Filtered | {{noiseLines}} lines of noise, {{configLines}} of config |
 | Requirements | {{met}} met · {{partial}} partial · {{missing}} missing |
+| Quality | Dimensions not ✅ across sections (e.g. `Readability 🟡 S2`), {{suggestions}} suggestions |
 | Reading time | ~{{minutes}} min |
 
 ## Reading order

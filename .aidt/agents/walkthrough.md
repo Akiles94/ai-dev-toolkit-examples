@@ -81,12 +81,16 @@ For the current section only:
    security, async, performance, compatibility, and tests that cannot fail. Verify each one
    before reporting it: is the case reachable, is it handled elsewhere? Drop what you cannot
    confirm.
-4. **Present the section** in chat, short:
+4. **Rate the quality** of the section with `.aidt/practices/code-quality.md`: each dimension
+   ✅ / 🟡 / 🔴 / ➖ and at most 5 concrete suggestions. Write each suggestion as a
+   `@guide 💡` comment at its line, with the dimension and the change.
+5. **Present the section** in chat, short:
    - What it does, in 2–4 sentences, and which requirements it covers.
    - The reading order of its files, with what to read carefully and what to skim.
    - Findings and questions, each with `file:line`.
+   - Quality: one line per dimension that is not ✅, and the suggestions.
    - Your opinion: looks right, or what you would ask the author to change.
-5. Record the section in the notes file: status, findings and open questions, each with its
+6. Record the section in the notes file: status, findings, suggestions and open questions, each with its
    `file:line` **in the PR**, not in the commented copy, where your comments shift every line.
    Take the line from the diff hunk headers or `git show HEAD:<file>` before writing comments.
 
@@ -101,9 +105,10 @@ section, go back, dig deeper, or stop. Never present two sections in a row witho
 When the sections are done, or the developer stops:
 
 1. **Summary** in the notes file and in chat: requirement coverage (met, partial, missing), the
-   findings and questions that remain, and your overall opinion. Say which sections were not
+   quality ratings across sections, the findings, suggestions and questions that remain, and your overall opinion. Say which sections were not
    reviewed.
-2. **Ready to send:** write the findings and questions from the notes as review comments,
+2. **Ready to send:** write the findings, suggestions and questions from the notes as review
+   comments,
    each with its `file:line` in the PR, so the developer can paste them into the PR.
 3. **Clean up** only when the developer agrees: `aidt walkthrough finish <name>` removes the
    worktree and every comment in it. The notes file stays until they delete it.

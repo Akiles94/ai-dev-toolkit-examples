@@ -12,9 +12,9 @@ lines, 11 green tests, and three rules of the ticket implemented wrongly on purp
 
 | Step | Model | Turns | Agent time | Tokens in (cached) | Tokens out | Cost at API prices |
 |---|---|---|---|---|---|---|
-| Review | `claude-sonnet-5-5` | 1 | 1 min 23 s | 411k (356k) | 10k | $0.27 |
+| Review | `claude-sonnet-5-5` | 1 | 1 min 17 s | 332k (298k) | 11k | $0.22 |
 
-Measured with Claude Code on 2026-11-06. Most input tokens are cache reads, which cost a tenth of fresh input. With a Claude subscription the runs count toward usage limits instead.
+Measured with Claude Code on 2026-11-07. Most input tokens are cache reads, which cost a tenth of fresh input. With a Claude subscription the runs count toward usage limits instead.
 
 ## The conversation
 
@@ -28,24 +28,37 @@ Measured with Claude Code on 2026-11-06. Most input tokens are cache reads, whic
 
 **Agent:**
 
-**Verdict: FAIL** on `feat/discount-codes` against `main` (reviewed commit `41a22c3`, feature commit `54e73bd`). I reviewed it without a spec, using SHOP-12 as the reference, and wrote no `state.json`. `npm test` passes 11 of 11 and `aidt clean --check` is clean. The project defines no lint or coverage commands, and there is no `.aidt/structure.md`, so I skipped `aidt structure audit`.
+**Verdict: FAIL** on commit `88eba3f` (SHOP-12, base `main`). I reviewed it without a spec, using requirements R1–R9 that I derived from the ticket. I did not edit any source code.
 
-Three ticket rules are implemented wrongly, and none has a test, so the suite stays green. The change is 65 reviewable lines and 36 test lines.
+**Checks**
+- `npm test` passes with 11 tests.
+- `aidt clean --check` finds no guide comments.
+- `aidt structure audit` reports two findings, `src/utils.ts` and `src/types.ts`. Both files already existed, so they don't count against this change.
 
-Confirmed bugs:
-1. **Expiry (`src/discounts.ts:23`):** it compares the date `"2027-12-31"` to a full timestamp, so a code expires at 00:00 UTC on its last valid day. For example, `SUMMER25` returns `EXPIRED_CODE` on 2026-09-01 at 10:00 UTC. The fix is to compare against `toISOString().slice(0, 10)`.
-2. **Fixed discount not capped (`src/discounts.ts:31`):** `BIGSAVER` (3000 cents) on a 500-cent subtotal gives a total of −2001. The fix is `Math.min(code.value, subtotalCents)`.
-3. **Free shipping ignores the discount (`src/cart.ts:60-61`):** it uses the undiscounted subtotal. With a 5400 subtotal and `BIGSAVER`, shipping is 0 when 499 is due.
+**Requirement coverage:** 5 met, 1 partial, 3 missing.
 
-Smaller items:
-- **Missing tests:** none cover the expiry boundary, the cap, shipping after discount, or the endpoint status codes.
-- **`null` body:** a `null` JSON body returns 500 (`src/server.ts:54`). The existing items route has the same issue.
-- **Expired after applying:** a code that expires after being applied silently stops discounting (`src/cart.ts:58`). I left this as a question for the author.
+**Defects (all 🔴, none caught by the current tests)**
+1. **Expiry (R5), `src/discounts.ts:23`.**
+   - The check `expiresOn < today.toISOString()` compares `"2027-12-31"` with `"2027-12-31T10:00…Z"`.
+   - The date string sorts first, so a code is rejected as `EXPIRED_CODE` on its last valid day.
+   - Fix: compare against `.slice(0, 10)`.
+2. **Fixed codes not capped (R4), `src/discounts.ts:30`.**
+   - `BIGSAVER` (3000 cents) on a 2999-cent cart gives a 3000-cent discount.
+   - `FIVEOFF` on an empty cart gives a total of −500.
+   - Fix: `Math.min(code.value, subtotalCents)`.
+3. **Free shipping (R8), `src/cart.ts:62`.**
+   - The threshold uses the subtotal before the discount.
+   - A 5000-cent cart with `WELCOME10` has a 4500-cent subtotal after the discount, but still ships free.
+   - Fix: use `subtotalCents - discount`.
 
-Requirement coverage: of R1–R9 (my numbering of the ticket's rules), 4 are met (R2, R3, R7, R9), 2 are partial (R1, R6) and 3 are missing (R4, R5, R8).
+**Quality**
+- **Tests: 🔴.** Nothing covers the expiry boundary, the cap, the shipping rule, or the HTTP 400 responses.
+- **Structure and Maintainability: 🟡.**
+- **Suggestions:** add the missing tests, and use a `Map` for the code table.
+- **Question for the author:** should a code that expires after being applied silently drop out of the totals, as it does now?
 
-The author needs to fix the three bugs and add tests for the expiry boundary, the cap, shipping after discount, and the 400 and 404 responses. Then the change should be reviewed again.
+To get a PASS, fix the three defects and add tests for each. The cap and the shipping rule need unit tests, and the expiry boundary needs a test at `2027-12-31T23:59:59Z`. The HTTP 400 responses for unknown and expired codes should also be tested.
 
-The guides are ready to paste as PR descriptions, in `.aidt/tasks/feat-discount-codes/review/`:
-- `index.md`
-- `s01-discount-codes.md`
+Guides, usable as PR descriptions (`state.json` not created, since this was a review without a spec):
+- `.aidt/tasks/feat-discount-codes/review/index.md`
+- `.aidt/tasks/feat-discount-codes/review/s01-discount-codes.md`

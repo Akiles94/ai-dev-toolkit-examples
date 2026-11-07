@@ -75,6 +75,26 @@ Input: `…`
 
 - None
 
+## Quality
+
+<!--
+  Rate the changed code with `.aidt/practices/code-quality.md`, one row per dimension it lists:
+  ✅ Good · 🟡 Improvable · 🔴 Broken rule · ➖ Not applicable, with the reason in one line.
+  Then at most 5 suggestions, highest impact first, one block each:
+
+  ### 🟡 <what to change, in one sentence> · `file:line` · <dimension>
+  <why it is better, one or two sentences>
+  ```suggestion
+  <replacement lines>
+  ```
+-->
+
+| Dimension | Rating | Why |
+|---|---|---|
+| Structure | ✅ | … |
+
+- No suggestions
+
 ## Questions for the author
 
 - None

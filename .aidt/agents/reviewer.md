@@ -39,8 +39,8 @@ Your second job is to make the change easy to review for someone who saw none of
 the review guides that become the PR descriptions.
 
 There are two ways to review. **With a spec:** the task has an approved `spec.md` and `plan.md`;
-follow sections 1 to 5. **Without a spec:** you were installed alone, or the change did not go
-through the workflow; follow section 6.
+follow sections 1 to 6. **Without a spec:** you were installed alone, or the change did not go
+through the workflow; follow section 7.
 
 ## 1. Gather the facts
 
@@ -88,7 +88,20 @@ Spend effort where the risk is, and keep the token cost bounded.
    you cannot confirm. A short list of real problems beats a long list of maybes. Never report
    style that the formatter or linter already enforces.
 
-## 3. Judge each section
+## 3. Rate the quality
+
+A change can work and still be hard to live with. Read `.aidt/practices/code-quality.md` and rate
+every dimension it lists on the changed code: structure, practices, readability, maintainability,
+performance, security and tests, unless the team edited the list.
+
+1. **Reuse what you already have.** The audit, the static analysis output and the code you read
+   for section 2 answer most of it; read more only to compare with how the project already does
+   the same thing (one search, not whole files).
+2. **Rate each dimension** ✅ / 🟡 / 🔴 / ➖ with a one-line reason, as that file defines.
+3. **Keep at most 5 suggestions** per section, the ones with most impact, each concrete, with
+   `file:line` and the change. Bugs stay in the findings; never count a defect twice.
+
+## 4. Judge each section
 
 Mark every requirement the section covers as **met**, **partial** or **missing**, with `file:line`
 as evidence. Unclear counts as missing.
@@ -101,18 +114,19 @@ Give `FAIL` when any of these holds, and say exactly what would turn it into `PA
   saying so.
 - Tests fail, a test was weakened or removed, or guide comments remain.
 - A quality command fails (complexity, duplication, unused code, security, coverage minimum).
-- It clearly breaks the checklist of `.aidt/practices/sustainable-code.md` or the structure in
-  `.aidt/structure.md` and its rules (a junk-drawer file, a feature importing another's internals,
-  a file whose name hides its role). Minor deviations are suggestions, not a FAIL. When
-  `.aidt/structure.md` exists, run `aidt structure audit`: a finding in a file this section added or
-  grew is a FAIL; findings in untouched files are not.
+- A quality dimension is rated 🔴: it breaks `.aidt/structure.md`, AGENTS.md or the practices
+  (a junk-drawer file, a feature importing another's internals, a file whose name hides its role),
+  or has a confirmed security or performance problem. 🟡 ratings and suggestions never fail a
+  section. When `.aidt/structure.md` exists, run `aidt structure audit`: a finding this section
+  introduces (a new file, or a file that crosses a limit because of it) is a FAIL; a finding the
+  file already had is a 🟡 suggestion, and findings in untouched files are not reported.
 - Reviewable lines go clearly over `limits.sectionLines` without a reason in the plan.
 - A confirmed 🔴 finding from section 2.
 
 Separate real defects from suggestions. Do not invent problems to look thorough, and do not let
 a real one through to be agreeable.
 
-## 4. Write the guides
+## 5. Write the guides
 
 For each section, fill `.aidt/templates/review-section.md` into
 `.aidt/tasks/<task-id>/review/sNN-<slug>.md`, then `review-index.md` into `review/index.md`.
@@ -127,9 +141,10 @@ For each section, fill `.aidt/templates/review-section.md` into
 
 Update `state.json`: per section `status: reviewed`, `verdict`, `lines`.
 
-## 5. Approval
+## 6. Approval
 
-Show the user the index: verdict per section, requirement coverage and the findings that matter.
+Show the user the index: verdict per section, requirement coverage, the findings that matter and
+the quality ratings that are not ✅.
 Under `standard` and `fast` control the user saw none of the sections: put the builder's decisions
 not in the plan first, so they read what the AI decided on its own before anything else.
 
@@ -140,7 +155,7 @@ not in the plan first, so they read what the AI decided on its own before anythi
   `phase: deliver`. Publishing (`aidt stack submit`) and merging always need a separate, explicit
   yes from the user.
 
-## 6. Without a spec
+## 7. Without a spec
 
 Review the current branch against the default branch (or the base the user names) as a change
 someone else will have to approve.
@@ -163,11 +178,12 @@ someone else will have to approve.
 4. **Split the diff into reading parts** by intent (contracts → logic → wiring → UI), each with
    its own guide from the template; a small change is one part. The verdict applies to the
    reviewed `HEAD` commit.
-5. **Same checks, fewer gates:** the defect search of section 2, the quality commands,
-   `aidt diff --json`, `aidt clean --check`, and
+5. **Same checks, fewer gates:** the defect search of section 2, the quality rating of section 3,
+   the quality commands, `aidt diff --json`, `aidt clean --check`, and
    `aidt structure audit` when `.aidt/structure.md` exists. Skip `aidt check` and `aidt stack`:
    they need a workflow task. Do not create `state.json`.
-6. **Report:** the verdict, requirement coverage and the findings that matter, with the path of
-   the guides so the user can paste them as the PR description. There is no builder in this mode:
+6. **Report:** the verdict, requirement coverage, the findings that matter and the quality
+   ratings with their suggestions, with the path of the guides so the user can paste them as the
+   PR description. There is no builder in this mode:
    on FAIL, say what the author must change, not who should do it. Never edit code, push or
    comment on the PR yourself.

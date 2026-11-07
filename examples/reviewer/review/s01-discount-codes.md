@@ -1,99 +1,109 @@
 # S1 · Discount codes
 
 > Stack: [index](index.md) · Part 1 of 1 · Previous: none · Next: none
-> Verdict: FAIL · Reviewed commit: `41a22c3` (feature commit `54e73bd`)
+> Verdict: FAIL · Reviewed commit: `88eba3f` (HEAD `aa60128` adds only toolkit files)
 
 ## At a glance
 
 | | |
 |---|---|
-| Reviewable lines | 65 (+62 / −3) in 4 files |
-| Tests | 36 lines changed (+35 / −1) in 2 files |
-| Filtered | 0 lines of noise, 0 of config |
-| Covers | R1–R9 (derived from ticket SHOP-12) |
+| Reviewable lines | 70 (+68 / −5 in total; see note) in 4 files |
+| Tests | 35 lines in 2 files |
+| Filtered | 0 lines of noise, 0 of config (toolkit files under `.aidt/`, `.claude/`, `.github/` not reviewed) |
+| Covers | R1–R9 (see index) |
 | Reading time | ~8 min |
 
 ## Predict first
 
-🤔 A customer has a $5.00 item and applies a fixed $30 code. What should the total be, and what does the code give?
+🤔 A customer has a $49.99 cart and applies a $30 code. What should the total be, and does the customer pay shipping?
 
 ## What it does
 
-Adds `POST /carts/:id/discount`. It looks the code up (case-insensitive), rejects unknown or expired codes with 400, and stores the code on the cart (`src/cart.ts:45`). `totals()` then subtracts a discount and the cart view returns `discountCents` (`src/cart.ts:56-69`, `src/server.ts:19`). Codes live in a hard-coded table (`src/discounts.ts:9`).
+Adds `POST /carts/:id/discount`. The code is stored on the cart (`src/cart.ts:50`). `totals()` looks it up again on every read and subtracts the discount (`src/cart.ts:60-70`). The cart view returns `discountCents` and the code.
 
 ## Walkthrough
 
-Input: cart with one item at $40.00 (4000 cents), `POST /carts/c1/discount {"code":"welcome10"}`.
+Input: `POST /carts/c1/discount {"code":"bigsaver"}`, cart holds one $29.99 item (2999 cents).
 
-1. `src/server.ts:54` → body parsed, `code` is a string.
-2. `src/cart.ts:47` → `findCode("welcome10")` → `src/discounts.ts:21` upper-cases to `WELCOME10`, found, not expired.
-3. `src/cart.ts:50` → cart stores `discountCode = "WELCOME10"`; a new code overwrites the old one.
-4. `src/server.ts:60` → `cartView` calls `totals()`.
-5. `src/cart.ts:58` → code re-resolved; `discountCents(…, 4000)` = 400.
-6. `src/cart.ts:60` → shipping looks at the **undiscounted** subtotal 4000, so 499 is charged. Total = 4000 − 400 + 499 = 4099.
+1. `src/server.ts:54-60` → body parsed, `code` is a string, calls `applyCode`.
+2. `src/discounts.ts:21-24` → uppercases to `BIGSAVER`, finds it (fixed, 3000), checks expiry.
+3. `src/cart.ts:50` → stores `discountCode = "BIGSAVER"`, replacing any earlier code.
+4. `src/cart.ts:61` → `discountCents` returns 3000, more than the 2999 subtotal.
+5. `src/cart.ts:62-63` → shipping uses the subtotal 2999 (under 5000), so 499 shipping.
+6. `src/cart.ts:66` → total = 2999 − 3000 + 499 = 498. Expected: discount capped at 2999, total 499.
 
 ## Reading order
 
 1. 🧠 `src/discounts.ts` · read carefully: lines 20-31
-2. 🧠 `src/cart.ts` · read carefully: lines 44-69
-3. ⚙️ `src/server.ts` · skim: lines 54-60
+2. 🧠 `src/cart.ts` · read carefully: lines 45-70
+3. ⚙️ `src/server.ts` · skim lines 54-60
 4. ⚙️ `src/types.ts` · skim
-5. 🧪 `tests/discounts.test.ts`
+5. 🧠 `tests/discounts.test.ts` · note what is not tested
 
 ## Affected flows
 
-- **Direct:** apply a code; cart totals; cart view.
-- **Indirect:** every endpoint that returns `cartView` (GET cart, add item, remove item) now includes `discountCents` and `discountCode`.
+- **Direct:** apply code to cart, cart totals.
+- **Indirect:** `GET /carts/:id`, add and remove item (all use `cartView` and `totals`).
 
 ## Requirement coverage
 
 | Req | Where | Test | Status |
 |---|---|---|---|
-| R1 Apply one code via POST /carts/:id/discount | `src/server.ts:54` | none at HTTP level | ⚠️ Partial |
-| R2 Case-insensitive | `src/discounts.ts:21` | `finds codes case-insensitively` | ✅ Met |
-| R3 Percent off subtotal | `src/discounts.ts:30` | `takes a percentage off the subtotal` | ✅ Met |
-| R4 Fixed off, never above subtotal | `src/discounts.ts:31` | none | ❌ Missing |
-| R5 Valid through end of expiry date (UTC) | `src/discounts.ts:23` | none for the boundary | ❌ Missing |
-| R6 Unknown 400 UNKNOWN_CODE, expired 400 EXPIRED_CODE | `src/discounts.ts:22-23`, `src/server.ts:58` | unit only | ⚠️ Partial |
-| R7 Second code replaces first | `src/cart.ts:50` | `a second code replaces the first` | ✅ Met |
-| R8 Free shipping uses subtotal after discount | `src/cart.ts:60-61` | none | ❌ Missing |
-| R9 Cart view shows discount | `src/server.ts:19` | none | ✅ Met |
+| R1 apply one code via POST | `server.ts:54` | none over HTTP | ⚠️ Partial |
+| R2 case-insensitive | `discounts.ts:21` | `finds codes case-insensitively` | ✅ Met |
+| R3 percent off subtotal | `discounts.ts:29` | `takes a percentage off the subtotal` | ✅ Met |
+| R4 fixed off, never above subtotal | `discounts.ts:30` | none | ❌ Missing |
+| R5 valid through end of expiry day (UTC) | `discounts.ts:23` | none for the boundary | ❌ Missing |
+| R6 UNKNOWN_CODE / EXPIRED_CODE as 400 | `server.ts:58`, `discounts.ts:22-23` | function level only, not HTTP | ✅ Met |
+| R7 second code replaces first | `cart.ts:50` | `a second code replaces the first` | ✅ Met |
+| R8 free shipping from $50 on post-discount subtotal | `cart.ts:62` | none | ❌ Missing |
+| R9 cart view shows discount | `cart.ts:64-69`, `server.ts:19` | none | ✅ Met |
 
 ## Findings
 
-### 🔴 Expiry compares a date to a full timestamp, so a code dies at 00:00 UTC of its last day · `src/discounts.ts:23`
-**Fails when:** `SUMMER25` (expires `2026-09-01`) is used on 2026-09-01 at 10:00 UTC. `"2026-09-01" < "2026-09-01T10:00:00.000Z"` is true, so it answers `EXPIRED_CODE` on its last valid day. The ticket says valid through the end of the expiry date.
+### 🔴 A code expires at the start of its last day, not the end · `src/discounts.ts:23`
+**Fails when:** `expiresOn = "2027-12-31"`, now is `2027-12-31T10:00Z`. The string `"2027-12-31"` sorts before `"2027-12-31T10:00:00.000Z"` (it is a prefix), so the code answers `EXPIRED_CODE` on its final valid day. The ticket says valid through the end of that date. The only expiry test uses a date a month after, so it cannot see this.
 **Fix:**
 ```suggestion
   if (found.expiresOn < today.toISOString().slice(0, 10)) return "EXPIRED_CODE";
 ```
 
-### 🔴 Fixed discount is not capped at the subtotal · `src/discounts.ts:31`
-**Fails when:** subtotal is 500 cents and `BIGSAVER` (3000) is applied: discount 3000, total = 500 − 3000 + 499 = −2001. An empty cart with `FIVEOFF` gives total −500.
+### 🔴 Fixed discount can exceed the subtotal · `src/discounts.ts:30`
+**Fails when:** one 2999-cent item and `BIGSAVER` (3000) → discount 3000. With an empty cart and `FIVEOFF` → discount 500, `totalCents = -500`. Negative totals are possible.
 **Fix:**
 ```suggestion
   return Math.min(code.value, subtotalCents);
 ```
 
-### 🔴 Free shipping ignores the discount · `src/cart.ts:60-61`
-**Fails when:** subtotal 5400 and `BIGSAVER` applied. After the discount the subtotal is 2400, under $50, so shipping (499) is due. The code uses 5400, charges 0 shipping, and the customer pays 2400 instead of 2899.
-**Fix (needs the cap above):**
+### 🔴 Free shipping uses the subtotal before the discount · `src/cart.ts:62`
+**Fails when:** 5000-cent subtotal with `WELCOME10`: discount 500, post-discount 4500, but `subtotalCents >= 5000` gives shipping 0. The ticket says free shipping is based on the subtotal after the discount, so shipping should be 499.
+**Fix:**
 ```suggestion
-  const discounted = subtotalCents - discount;
   const shippingCents =
-    discounted === 0 || discounted >= FREE_SHIPPING_FROM_CENTS ? 0 : SHIPPING_CENTS;
+    subtotalCents === 0 || subtotalCents - discount >= FREE_SHIPPING_FROM_CENTS ? 0 : SHIPPING_CENTS;
 ```
-and `totalCents: discounted + shippingCents`.
 
-### 🟡 Missing tests for the new rules · `tests/discounts.test.ts`
-No test covers the expiry boundary day, the cap, shipping after discount, or the endpoint status codes (400 UNKNOWN_CODE / EXPIRED_CODE, 404 cart). That is why the three bugs above pass the suite (11 of 11 green). The expired test uses 2026-10-01, which is not the boundary.
+### 🟡 An applied code that later expires silently drops out of the totals · `src/cart.ts:60-61`
+`totals` re-validates the code and treats `EXPIRED_CODE` as no discount, without telling the customer. Maybe intended, but the ticket does not say.
 
-### 🟡 Non-object JSON body gives a 500 · `src/server.ts:54`
-**Fails when:** body is `null` → `body.code` throws a TypeError, answered as 500 INTERNAL. Same pattern as the existing items route, so low priority.
+## Quality
 
-### ℹ️ A code that expires after being applied silently stops discounting · `src/cart.ts:58`
-`totals()` drops the discount with no signal. Probably acceptable; confirm it is intended.
+| Dimension | Rating | Why |
+|---|---|---|
+| Structure | 🟡 | New `src/discounts.ts` is well placed. The audit flags `src/types.ts` and `src/utils.ts`, both existing before; this change only adds 2 lines to `types.ts`. |
+| Practices | ✅ | Errors as values, same style as `addItem`. |
+| Readability | ✅ | Small functions, clear names. |
+| Maintainability | 🟡 | Code table hard-coded at `discounts.ts:10`; `totals` cannot inject the date, so it is hard to test expiry through the cart. |
+| Performance | ✅ | One lookup per totals call. |
+| Security | ✅ | Body type checked; lookup is a record key with uppercased input. |
+| Tests | 🔴 | No test covers the boundary day, the cap, the shipping rule or the HTTP 400 responses. Three requirements with bugs have no test. |
+
+### 🟡 Add tests for the gaps · `tests/discounts.test.ts`
+Add: expiry boundary (`2027-12-31T23:59:59Z` valid, `2028-01-01T00:00:00Z` expired), fixed code above subtotal, free shipping on the post-discount subtotal, and HTTP 400 `UNKNOWN_CODE` / `EXPIRED_CODE`.
+
+### 🟡 Use a `Map` for the code table · `src/discounts.ts:10`
+A plain object lookup with user input can hit inherited keys. Not exploitable today (keys are uppercased, so `constructor` does not match), but a `Map` removes the risk class.
 
 ## Questions for the author
 
-- Is a silently dropped expired code at view time intended?
+- Should an applied code that later expires be removed from the cart, or ignored in totals (current behavior)?
