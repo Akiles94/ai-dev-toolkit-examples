@@ -1,3 +1,4 @@
+import { LOW_STOCK_THRESHOLD, recordLowStockAlert } from "./alerts.ts";
 import type { Product } from "./types.ts";
 
 const catalog: Product[] = [
@@ -19,6 +20,10 @@ export function findProduct(id: string): Product | undefined {
 export function reserveStock(id: string, qty: number): boolean {
   const product = findProduct(id);
   if (!product || product.stock < qty) return false;
+  const before = product.stock;
   product.stock -= qty;
+  if (before >= LOW_STOCK_THRESHOLD && product.stock < LOW_STOCK_THRESHOLD) {
+    recordLowStockAlert(product, product.stock);
+  }
   return true;
 }
