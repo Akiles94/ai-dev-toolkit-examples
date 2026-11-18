@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { addItem, createCart, getCart, removeItem, totals } from "./cart.ts";
 import { listProducts } from "./products.ts";
+import { serveStatic } from "./static.ts";
 import type { Product } from "./types.ts";
 import { formatCents, isPositiveInt, readJson } from "./utils.ts";
 
@@ -57,6 +58,8 @@ async function route(req: IncomingMessage, res: ServerResponse): Promise<void> {
         : send(res, 404, { error: "CART_NOT_FOUND" });
     }
   }
+
+  if (req.method === "GET" && (await serveStatic(url.pathname, res))) return;
 
   send(res, 404, { error: "NOT_FOUND" });
 }
