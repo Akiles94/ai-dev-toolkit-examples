@@ -7,7 +7,7 @@ Edit these files to customize an agent; never edit the generated per-tool files.
 ---
 name: refiner                       # lowercase, unique, used as the command name
 description: One line. What it does and when to use it.
-tier: balanced                      # efficient | balanced | max (mapped to a model per tool)
+tier: balanced                      # efficient | balanced | max (model per tool: `models` in config.json)
 context: shared                     # shared (default) | fresh: runs without the conversation
 capabilities: [read, ask, write]    # what the agent may do (see below)
 writes:                             # files it may create or change (globs); required with `write`

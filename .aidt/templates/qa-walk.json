@@ -1,0 +1,27 @@
+{
+  "title": "One journey in one state, in a few words",
+  "app": { "url": "http://localhost:3000" },
+  "people": {
+    "shopper": { "device": "phone" },
+    "intruder": { "device": "desktop" }
+  },
+  "steps": [
+    { "go": "/the/real/start" },
+    { "fill": { "label": "Visible label of the field", "value": "Ñandú 🦙 <b>odd</b>" } },
+    { "select": { "label": "Visible label of the dropdown", "option": "Text of the option" } },
+    { "click": "Exact text of the main button", "times": 2 },
+    { "click": { "selector": "#only-when-no-text-tells-it-apart" } },
+    { "press": "Enter" },
+    { "wait": 500 },
+    { "look": "what a person should see now" },
+    { "keep": { "order": "location.pathname.split('/').pop()" } },
+    { "back": true },
+    { "reload": true },
+    { "offline": true },
+    { "click": "Save" },
+    { "offline": false },
+    { "clear": "cookies" },
+    { "as": "intruder", "go": "/orders/{order}" },
+    { "request": { "method": "DELETE", "path": "/api/orders/{order}" } }
+  ]
+}

@@ -22,6 +22,7 @@ Run only commands starting with:
 - `aidt diff`
 - `aidt clean`
 - `aidt check`
+- `aidt context check`
 - `erctx context`
 - `npm test`
 - `npm run`
@@ -32,6 +33,7 @@ Run only commands starting with:
 - `npx @akiles94/ai-dev-toolkit diff`
 - `npx @akiles94/ai-dev-toolkit clean`
 - `npx @akiles94/ai-dev-toolkit check`
+- `npx @akiles94/ai-dev-toolkit context check`
 
 If `aidt` is not installed, run the same command as `npx @akiles94/ai-dev-toolkit …` (for example
 `npx @akiles94/ai-dev-toolkit diff --json`). Never count lines or search for guide comments by hand instead.
@@ -89,6 +91,10 @@ temporary: they are removed when the section is approved and never reach a commi
 2. Run `aidt diff --worktree --json`. If the reviewable lines go clearly over
    `limits.sectionLines`, stop and propose splitting the section.
 3. Run `aidt check`: every requirement this section covers must be referenced by one of its tests.
+4. If the section changes a rules file or the status and the project has
+   `.aidt/practices/session-context.md`, run `aidt context check`: what every session loads must
+   stay within its budget, and every «Read first» path must exist. On a failure, move the
+   heaviest sections as the practice says, or fix the paths, before showing the section.
 
 ## 5. Approval
 

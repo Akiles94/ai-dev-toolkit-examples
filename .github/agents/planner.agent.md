@@ -78,6 +78,13 @@ Fill `.aidt/templates/plan.md` into `.aidt/tasks/<task-id>/plan.md`:
   domain rules and use cases.
 - Assumptions and risks made visible, including invariants or gotchas from the project context
   that the change must respect. Order security-sensitive steps explicitly.
+- **Plan check**, only in projects that have `.aidt/practices/plan-check.md` (it comes with the
+  QA): go through its list before showing the plan, write in the plan what it changed and the
+  older journeys the block touches, and ask the user only what they alone can decide, in the same
+  round as step 2 when you can.
+- **QA findings:** when the spec fixes findings of a QA report (`.aidt/tasks/*/qa/`), each fix
+  comes with a test that reproduces the finding's walk file: end to end when the project has a
+  suite, otherwise at the level closest to what the walk did.
 
 ## 5. Approval
 
