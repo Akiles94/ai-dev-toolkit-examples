@@ -1,12 +1,14 @@
 # Status
 
-_Updated: 18/11/2026 · `9294c30` on `claude/gifted-volta-n479gk`_
+_Updated: 18/11/2026 · `7b5bfe0` on `fix/SHOP-41-storefront-qa-findings`_
 
 ## Now
 
-Nothing in progress. SHOP-40 is closed: the storefront page at `/`, the reviewer's PASS on its three
-sections, its demo in `examples/demo/`. It is on this branch with no PR yet. PRs #3 and #4 (SHOP-24)
-are still open as drafts.
+SHOP-41 (fixes of the storefront's first QA pass) is built and reviewed: PASS on its three
+sections. The QA's second pass found QA-01 to QA-03 fixed and a new 🟡, QA-05, brought by the
+QA-03 fix (on a phone the docked cart cuts the third line's Remove button). Waiting on the user's
+decision on QA-05 and QA-04. Reports: `.aidt/tasks/feat-SHOP-40-storefront/qa/`. Nothing is pushed
+to `main`; PRs #3 and #4 (SHOP-24) are still open as drafts.
 
 ## Next
 
@@ -32,12 +34,15 @@ control level from the user before it starts.
 
 ## Open decisions
 
+- QA-05: fix it in SHOP-41 and run a third QA pass (the QA recommends it), or accept it?
+- QA-04: accept until accounts exist (the QA recommends it), or a ticket before checkout?
 - PRs #3 and #4: keep as the workflow's example (recommended), or merge into `main`?
-- SHOP-40: open a PR for the three sections, or keep it as the example (recommended)?
-- Structure migration: start now (recommended), or later?
+- SHOP-40 and SHOP-41: open PRs, or keep them as the examples (recommended)?
+- Structure migration: start after the QA decisions (recommended), or later?
 
 ## Recent
 
+- 18/11 · SHOP-41 and the storefront's QA · `examples/qa/README.md`
 - 18/11 · SHOP-40 · `.aidt/tasks/feat-SHOP-40-storefront/summary.md`
 - 07/11 · SHOP-24 · `.aidt/tasks/feat-SHOP-24-low-stock-alerts/summary.md`
 - 06/11 · Structure audit and decision · `.aidt/tasks/structure-decision/summary.md`
