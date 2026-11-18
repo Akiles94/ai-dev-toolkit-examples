@@ -22,6 +22,6 @@
     { "offline": false },
     { "clear": "cookies" },
     { "as": "intruder", "go": "/orders/{order}" },
-    { "request": { "method": "DELETE", "path": "/api/orders/{order}" } }
+    { "as": "intruder", "request": { "method": "DELETE", "path": "/api/orders/{order}" } }
   ]
 }

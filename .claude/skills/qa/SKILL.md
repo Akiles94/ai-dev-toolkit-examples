@@ -120,7 +120,8 @@ On each journey, do what people do:
 - a double tap on the main button (`"times": 2`), Enter, an empty field, a long or odd value
   (accents, emoji, `<b>`, spaces, a past date, 29/02);
 - the same link with no session or in another person's session (`keep` the id or the address,
-  then `as` another person);
+  then a step `as` another person: `as` names who does that one step, the first person in
+  `people` does the others);
 - an expired session (`"clear": "cookies"` or `"storage"`), a failed call (`"offline": true`);
 - every email the step sends, and where its links land, when `.aidt/app.md` names a mail catcher.
 
@@ -156,7 +157,9 @@ Code style, structure and test quality are the reviewer's, not yours.
 ## 5. Confirm
 
 Run the walk of each finding a second time, from a new browser: a finding that does not show again
-is not confirmed. What you saw once and could not repeat, or could only infer, goes
+is not confirmed. Write under «Seen» only what the log shows (a call and its status, the page's text
+after a `look`, a screenshot you opened); an empty text or a blank page means the step did not
+look where you meant, so fix the walk and run it again. What you saw once and could not repeat, or could only infer, goes
 under «Unconfirmed»: never drop it. Severity: 🔴 blocks or misleads a real person, loses data or
 shows it to someone else · 🟡 a real annoyance or risk · ℹ️ a note.
 
