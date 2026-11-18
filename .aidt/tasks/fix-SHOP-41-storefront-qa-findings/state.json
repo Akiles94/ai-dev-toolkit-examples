@@ -1,0 +1,17 @@
+{
+  "task": "fix-SHOP-41-storefront-qa-findings",
+  "ticket": "SHOP-41",
+  "branch": "fix/SHOP-41-storefront-qa-findings",
+  "mode": "light",
+  "control": "strict",
+  "phase": "build",
+  "approvals": {
+    "spec": "2026-11-18",
+    "plan": "2026-11-18"
+  },
+  "sections": [
+    { "id": "S1", "name": "Bad cart-item bodies", "status": "in-progress" },
+    { "id": "S2", "name": "Message clears", "status": "pending" },
+    { "id": "S3", "name": "Phone cart", "status": "pending" }
+  ]
+}
