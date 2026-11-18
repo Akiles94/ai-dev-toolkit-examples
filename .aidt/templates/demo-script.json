@@ -1,0 +1,24 @@
+{
+  "title": "What the demo shows, in a few words",
+  "app": { "start": "npm start", "url": "http://localhost:3000" },
+  "device": "desktop",
+  "scenes": [
+    {
+      "title": "The main path, as a person does it",
+      "steps": [
+        { "go": "/page" },
+        { "say": "One idea per line, said before or while it happens on screen." },
+        { "fill": { "label": "Visible label of the field", "value": "example value" } },
+        { "click": "Exact text of the button" },
+        { "click": { "selector": "#only-when-no-text-tells-it-apart" } },
+        { "scroll": "A text further down the page" },
+        { "press": "Enter" },
+        { "wait": 800 }
+      ]
+    },
+    {
+      "title": "Other paths",
+      "steps": [{ "say": "What happens when there is nothing to show, or a step fails." }]
+    }
+  ]
+}
