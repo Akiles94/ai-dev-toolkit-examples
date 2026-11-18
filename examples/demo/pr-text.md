@@ -2,7 +2,7 @@
 
 <!-- Drag the video here: GitHub uploads it and plays it in the description. -->
 
-1:16 · rendered at `03d6793` · 1.1 MB · recorded by `aidt demo render`, no tokens
+1:20 · rendered at `82ae676` · 1.1 MB · recorded by `aidt demo render` in 110 s, no tokens
 
 <details><summary>What the voice says</summary>
 

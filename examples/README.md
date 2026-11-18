@@ -12,7 +12,7 @@ wrote, and what it cost. Nothing was edited, except local paths.
 | [structure](structure/) | `aidt structure audit`, `architect` | This repository's `main` | Three paths, a decision file and a five-step migration | $0.15 |
 | [workflow](workflow/) | `refiner` → `planner` → `builder` → `reviewer` | The SHOP-24 spec | Two reviewed, stacked PRs: [#3](https://github.com/Akiles94/ai-dev-toolkit-examples/pull/3), [#4](https://github.com/Akiles94/ai-dev-toolkit-examples/pull/4) | $1.43 |
 | [storefront](storefront/) | `refiner` → `planner` → `builder` → `reviewer` | Ticket SHOP-40, the API's first web page | Three reviewed sections, PASS, on `feat/SHOP-40-storefront` | $1.65 |
-| [demo](demo/) | `demo`, `aidt demo render` | The SHOP-40 branch | A narrated video of 1 min 16 s, its script, subtitles and PR text | $0.28 |
+| [demo](demo/) | `demo`, `aidt demo render` | The SHOP-40 branch | A narrated video of 1 min 20 s, its script, subtitles and PR text | $0.28 |
 | [context](context/) | `aidt context check`, closing a block | A status that kept every block | A status 80 % shorter, one summary per block, session starts measured | $0.28 |
 
 All runs: Claude Code, model `claude-sonnet-5-5` (tier `balanced`); the first five on 2026-11-06 and

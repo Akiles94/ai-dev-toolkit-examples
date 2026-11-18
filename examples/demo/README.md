@@ -2,7 +2,7 @@
 
 The [demo](https://github.com/Akiles94/ai-dev-toolkit/blob/main/docs/demo.md) agent on the branch of the [storefront example](../storefront/): it proposed the scenes and a cost, wrote a script, and `aidt demo render` recorded it with an offline voice, with no tokens.
 
-**[▶ storefront.mp4](storefront.mp4)** · 1 min 16 s · 1.1 MB · voice `en_US-lessac-high` (the default: American English, a woman) · subtitles in [storefront.vtt](storefront.vtt)
+**[▶ storefront.mp4](storefront.mp4)** · 1 min 20 s · 1.1 MB · voice `en_US-lessac-high` (the default: American English, a woman) · subtitles in [storefront.vtt](storefront.vtt)
 
 - [storefront.json](../../.aidt/tasks/feat-SHOP-40-storefront/demo/storefront.json): the script, committed with the task. Rendering it again costs nothing.
 - [pr-text.md](pr-text.md): the text `aidt demo render` wrote for the PR description, with the narration as a written walkthrough.
@@ -15,9 +15,11 @@ The [demo](https://github.com/Akiles94/ai-dev-toolkit/blob/main/docs/demo.md) ag
 | Scope and cost | `claude-sonnet-5-5` | — | 15 s | 188k (169k) | 2k | $0.08 |
 | Script, a sample and the video | `claude-sonnet-5-5` | 15 | 4 min 25 s | 498k (474k) | 6k | $0.20 |
 | **Total** | | | | | | **$0.28** |
+| Rendering it again, after the review's fixes to the CLI | none | — | 1 min 50 s | 0 | 0 | $0.00 |
 
 - **Writing the script:** the tokens above. **Rendering:** no tokens; the full video took 108 s to render on a cloud container (Playwright, Piper and ffmpeg), and the agent rendered a first-scene sample before it.
 - **After a change asked in review:** `aidt demo render .aidt/tasks/feat-SHOP-40-storefront/demo/storefront.json` again, still no tokens; the script is touched only where a step or a line became wrong.
+- **The video here is that second render.** After the toolkit's own review, the command that starts the app moved from the script to `demo.start` in `.aidt/config.json` (an agent writes scripts, so it must not choose what a render runs): the only change to the agent's script is that `app.start` went to the config. The render then took 1 min 50 s, with no tokens, and its PR text gives the video's real length (1:20; the first render's said 1:16, the time of its steps).
 
 Measured with Claude Code 2.1.327, headless (`claude -p`), on 2026-11-18, with every answer typed by hand. Most input tokens are cache reads, which cost a tenth of fresh input. Agents that run apart from the conversation (the reviewer, the demo's first call) report no turns. With a Claude subscription the runs count toward usage limits instead.
 
