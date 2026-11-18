@@ -1,0 +1,17 @@
+{
+  "task": "feat-SHOP-40-storefront",
+  "ticket": "SHOP-40",
+  "branch": "feat/SHOP-40-storefront",
+  "mode": "full",
+  "control": "strict",
+  "phase": "review",
+  "approvals": {
+    "spec": "2026-11-18",
+    "plan": "2026-11-18"
+  },
+  "sections": [
+    { "id": "S1", "name": "Serve the page", "status": "reviewed", "verdict": "PASS", "commit": "7b2172d", "lines": 43 },
+    { "id": "S2", "name": "Page logic", "status": "reviewed", "verdict": "PASS", "commit": "06da872", "lines": 97 },
+    { "id": "S3", "name": "Page wiring", "status": "reviewed", "verdict": "PASS", "commit": "c043ebf", "lines": 243 }
+  ]
+}

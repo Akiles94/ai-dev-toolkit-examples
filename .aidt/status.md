@@ -1,0 +1,45 @@
+# Status
+
+_Updated: 18/11/2026 · `9294c30` on `claude/gifted-volta-n479gk`_
+
+## Now
+
+Nothing in progress. SHOP-40 is closed: the storefront page at `/`, the reviewer's PASS on its three
+sections, its demo in `examples/demo/`. It is on this branch with no PR yet. PRs #3 and #4 (SHOP-24)
+are still open as drafts.
+
+## Next
+
+Structure migration (conventional level, Node preset), scheduled after SHOP-40. Types next to their
+module, `utils.ts` split by subject, each move in its own commit, logic never mixed with moves.
+Plan: the migration steps in `.aidt/tasks/structure-decision/summary.md`. Needs a branch name and a
+control level from the user before it starts.
+
+1. Run `aidt structure audit` to see the two findings (`src/utils.ts`, `src/types.ts`) as they are now.
+2. Plan the moves, one commit each, with `npm test` green after every one.
+
+### Read first
+
+- `.aidt/tasks/structure-decision/summary.md`: the decision and the migration steps
+- `src/utils.ts`: money and ids, to split by subject
+- `src/types.ts`: shared types, to move next to their module
+
+### Not needed
+
+- `.aidt/tasks/feat-SHOP-40-storefront/`: closed block's record, only if a task asks for history
+- `public/`: the page does not use `src/utils.ts`, it has its own `formatCents` copy and a parity test
+- `examples/`: kept agent runs
+
+## Open decisions
+
+- PRs #3 and #4: keep as the workflow's example (recommended), or merge into `main`?
+- SHOP-40: open a PR for the three sections, or keep it as the example (recommended)?
+- Structure migration: start now (recommended), or later?
+
+## Recent
+
+- 18/11 · SHOP-40 · `.aidt/tasks/feat-SHOP-40-storefront/summary.md`
+- 07/11 · SHOP-24 · `.aidt/tasks/feat-SHOP-24-low-stock-alerts/summary.md`
+- 06/11 · Structure audit and decision · `.aidt/tasks/structure-decision/summary.md`
+
+All blocks: `.aidt/tasks/README.md`.
