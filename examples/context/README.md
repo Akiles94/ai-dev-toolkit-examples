@@ -19,6 +19,7 @@ repository: `aidt context check` before and after, the agent closing a block as
 | Session start, status that kept every block (median of 3) | `claude-sonnet-5-5` | 4 | 8 s | 155k (140k) | 761 | $0.076 |
 | Close the block: 5 summaries, the index, the status rewritten | `claude-sonnet-5-5` | 15 | 1 min 5 s | 449k (419k) | 11k | $0.28 |
 | Session start, status rewritten (median of 3) | `claude-sonnet-5-5` | 2 | 7 s | 76k (67k) | 628 | $0.051 |
+| Close SHOP-40: its summary, its row, the status rewritten | `claude-sonnet-5-5` | 23 | 52 s | 843k (807k) | 6.8k | $0.29 |
 
 - The three starts before took 2, 4 and 4 turns ($0.072 to $0.078); the three after, 2 turns every
   time ($0.050 to $0.051). Same question, same answer each time: where the work stands, the next
@@ -26,6 +27,10 @@ repository: `aidt context check` before and after, the agent closing a block as
 - Here the status was small (2,130 tokens), so a session start saves about $0.025. The saving
   grows with the status: on a real project after three weeks, `aidt context check` measured
   19,891 tokens of status and 5,110 of rules, read before every session's first step.
+- **The next block did not grow it.** After SHOP-40 (the [storefront](../storefront/) and its
+  [demo](../demo/)), the agent closed that block too: the status went from 423 to 459 tokens,
+  where the old way added about 350 per block. That close is kept as it was written:
+  [`.aidt/tasks/feat-SHOP-40-storefront/summary.md`](../../.aidt/tasks/feat-SHOP-40-storefront/summary.md).
 - Most input tokens are Claude Code's own instructions and tools, the same in every session, and
   cache reads, which cost a tenth of fresh input.
 

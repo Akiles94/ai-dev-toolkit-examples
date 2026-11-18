@@ -1,47 +1,45 @@
 # Status
 
-_Updated: 07/11/2026 · `055cc16` on `main`_
+_Updated: 18/11/2026 · `9294c30` on `claude/gifted-volta-n479gk`_
 
 ## Now
 
-Nothing in progress. SHOP-24 is closed: PRs #3 and #4 (low-stock alerts) are open as drafts, the
-reviewer's PASS on both.
+Nothing in progress. SHOP-40 is closed: the storefront page at `/`, the reviewer's PASS on its three
+sections, its demo in `examples/demo/`. It is on this branch with no PR yet. PRs #3 and #4 (SHOP-24)
+are still open as drafts.
 
 ## Next
 
-SHOP-40 · A storefront page. The API is JSON only; a page at `/` lets a person use the shop in a
-browser, and is the first change a demo video can show. Branch `feat/SHOP-40-storefront` from
-`main`, full workflow, control `strict`.
+Structure migration (conventional level, Node preset), scheduled after SHOP-40. Types next to their
+module, `utils.ts` split by subject, each move in its own commit, logic never mixed with moves.
+Plan: the migration steps in `.aidt/tasks/structure-decision/summary.md`. Needs a branch name and a
+control level from the user before it starts.
 
-Ticket: «At `/`, a page lists the products as cards (name, price, stock), with a category filter.
-Under 5 in stock the card says "Only N left"; at 0 it says "Out of stock" and cannot be added.
-"Add to cart" uses the existing cart endpoints, and a cart panel shows the items, subtotal,
-shipping (free from $50) and total, with a way to remove an item.»
-
-1. `/refiner` on the ticket, then `/planner`, `/builder`, `/reviewer`.
-2. Then a demo with `/demo`, kept in `examples/demo/`.
+1. Run `aidt structure audit` to see the two findings (`src/utils.ts`, `src/types.ts`) as they are now.
+2. Plan the moves, one commit each, with `npm test` green after every one.
 
 ### Read first
 
-- `src/server.ts`: the routes the page will call
-- `src/cart.ts`: totals and shipping
-- `src/products.ts`: the catalogue and its stock
+- `.aidt/tasks/structure-decision/summary.md`: the decision and the migration steps
+- `src/utils.ts`: money and ids, to split by subject
+- `src/types.ts`: shared types, to move next to their module
 
 ### Not needed
 
-- `.aidt/tasks/`: closed blocks' records, only if a task asks for history
+- `.aidt/tasks/feat-SHOP-40-storefront/`: closed block's record, only if a task asks for history
+- `public/`: the page does not use `src/utils.ts`, it has its own `formatCents` copy and a parity test
 - `examples/`: kept agent runs
-- `.aidt/structure.md`: the migration is scheduled after SHOP-40
 
 ## Open decisions
 
 - PRs #3 and #4: keep as the workflow's example (recommended), or merge into `main`?
-- Structure migration: after SHOP-40 (recommended), or earlier?
+- SHOP-40: open a PR for the three sections, or keep it as the example (recommended)?
+- Structure migration: start now (recommended), or later?
 
 ## Recent
 
+- 18/11 · SHOP-40 · `.aidt/tasks/feat-SHOP-40-storefront/summary.md`
 - 07/11 · SHOP-24 · `.aidt/tasks/feat-SHOP-24-low-stock-alerts/summary.md`
 - 06/11 · Structure audit and decision · `.aidt/tasks/structure-decision/summary.md`
-- 06/11 · SHOP-31 · `.aidt/tasks/feat-checkout-orders/summary.md`
 
 All blocks: `.aidt/tasks/README.md`.

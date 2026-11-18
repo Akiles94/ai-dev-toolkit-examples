@@ -31,7 +31,7 @@ demo repository of the AI Dev Toolkit: every agent is run here and its output ke
 - Money is integer cents (`priceCents`), formatted only at the edge (`formatCents`).
 - Errors are status codes with a JSON `{ "error": "CODE" }`.
 - Tests next to the behaviour they name, in `tests/*.test.ts`.
-- Structure: `.aidt/structure.md` (conventional level, Node preset, migration pending).
+- Structure: `examples/structure/structure.md` (conventional level, Node preset, migration pending).
 
 ## Flows
 

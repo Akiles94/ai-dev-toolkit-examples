@@ -10,3 +10,4 @@ Each folder holds one block of work, named after its branch (`/` → `-`): its r
 | SHOP-31 · Checkout and orders, walked through (06/11) | `feat-checkout-orders/` | `feat-checkout-orders/summary.md` | none (walkthrough) | never, example |
 | Structure · audit and decision (06/11) | `structure-decision/` | `structure-decision/summary.md` | none | on `main` |
 | SHOP-24 · Low-stock alerts (07/11) | `feat-SHOP-24-low-stock-alerts/` | `feat-SHOP-24-low-stock-alerts/summary.md` | PASS on `fb160a7` (PRs #3, #4) | not yet, drafts open |
+| SHOP-40 · Storefront page (18/11) | `feat-SHOP-40-storefront/` | `feat-SHOP-40-storefront/summary.md` | PASS on `7b2172d`, `06da872`, `c043ebf` | not yet, no PR |
