@@ -30,6 +30,14 @@ test("R1: the page's script and style are served with browser-valid content type
   assert.match(css.headers.get("content-type") ?? "", /^text\/css/);
 });
 
+test("R1: the page's modules are served as JavaScript", async () => {
+  for (const path of ["/shop-view.js", "/cart-session.js"]) {
+    const res = await fetch(`${base}${path}`);
+    assert.equal(res.status, 200, path);
+    assert.match(res.headers.get("content-type") ?? "", /^text\/javascript/, path);
+  }
+});
+
 test("R12: paths outside the list keep the JSON 404", async () => {
   for (const path of ["/unknown", "/package.json", "/src/server.ts"]) {
     const res = await fetch(`${base}${path}`);
