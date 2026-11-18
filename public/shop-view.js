@@ -21,6 +21,12 @@ export function filterByCategory(products, category) {
   return products.filter((product) => product.category === category);
 }
 
+const CLEARING_EVENTS = ["filter-changed", "added", "removed"];
+
+export function messageAfter(event, current) {
+  return CLEARING_EVENTS.includes(event) ? "" : current;
+}
+
 export function cartPanelView(cart, products) {
   const byId = new Map(products.map((product) => [product.id, product]));
   return {
