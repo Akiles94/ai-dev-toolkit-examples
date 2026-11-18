@@ -10,8 +10,8 @@
     "plan": "2026-11-18"
   },
   "sections": [
-    { "id": "S1", "name": "Bad cart-item bodies", "status": "approved", "commit": "f5f37a5", "lines": 16 },
-    { "id": "S2", "name": "Message clears", "status": "approved", "commit": "920a964", "lines": 19 },
-    { "id": "S3", "name": "Phone cart", "status": "approved", "commit": "8694974", "lines": 30 }
+    { "id": "S1", "name": "Bad cart-item bodies", "status": "reviewed", "verdict": "PASS", "commit": "f5f37a5", "lines": 16 },
+    { "id": "S2", "name": "Message clears", "status": "reviewed", "verdict": "PASS", "commit": "920a964", "lines": 16 },
+    { "id": "S3", "name": "Phone cart", "status": "reviewed", "verdict": "PASS", "commit": "8694974", "lines": 25 }
   ]
 }
