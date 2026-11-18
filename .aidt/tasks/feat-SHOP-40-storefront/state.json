@@ -4,14 +4,14 @@
   "branch": "feat/SHOP-40-storefront",
   "mode": "full",
   "control": "strict",
-  "phase": "build",
+  "phase": "review",
   "approvals": {
     "spec": "2026-11-18",
     "plan": "2026-11-18"
   },
   "sections": [
-    { "id": "S1", "name": "Serve the page", "status": "pending" },
-    { "id": "S2", "name": "Page logic", "status": "pending" },
-    { "id": "S3", "name": "Page wiring", "status": "pending" }
+    { "id": "S1", "name": "Serve the page", "status": "reviewed", "verdict": "PASS", "commit": "7b2172d", "lines": 43 },
+    { "id": "S2", "name": "Page logic", "status": "reviewed", "verdict": "PASS", "commit": "06da872", "lines": 97 },
+    { "id": "S3", "name": "Page wiring", "status": "reviewed", "verdict": "PASS", "commit": "c043ebf", "lines": 243 }
   ]
 }
