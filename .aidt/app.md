@@ -25,4 +25,11 @@
 
 ## QA
 
-Not filled (the `qa` agent is not installed).
+- **Journeys and promises:** the acceptance table of the block's `spec.md` (`.aidt/tasks/<task-id>/spec.md`) and `AGENTS.md` «Flows». Page texts that promise something: "No more in stock", "Only N left", "Out of stock", "Something went wrong. Try again.", shipping "free from $50".
+- **Known or accepted:** none yet.
+- **Start/stop:** the shop is normally already running at `http://localhost:3000`; the qa agent does not start or stop it. If it does not answer, ask the user to run `npm start`.
+- **Browsers:** desktop Chromium via `aidt qa walk` (a `phone` device for narrow layouts).
+- **Mail catcher:** none (the shop sends no email).
+- **Time simulation:** none.
+- **Data the walks change:** carts and nothing else (stock only goes down at checkout, which does not exist). The shop's state is reset only by restarting it, which the qa agent does not do.
+- **Ids:** products are `p-1`..`p-4`; carts are `cart-<8 hex>`.

@@ -1,0 +1,18 @@
+{
+  "title": "Bad intentions: another shopper's cart id reused",
+  "app": { "url": "http://localhost:3000" },
+  "people": {
+    "shopper": { "device": "desktop" },
+    "intruder": { "device": "desktop" }
+  },
+  "steps": [
+    { "go": "/" },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "keep": { "cart": "localStorage.getItem('shop.cartId')" } },
+    { "as": "intruder", "request": { "method": "GET", "path": "/carts/{cart}" } },
+    { "as": "intruder", "request": { "method": "POST", "path": "/carts/{cart}/items", "body": { "productId": "p-1", "qty": 1 } } },
+    { "as": "intruder", "request": { "method": "DELETE", "path": "/carts/{cart}/items/p-3" } },
+    { "reload": true },
+    { "look": "the shopper's cart as changed by the intruder: Pragmatic x1 added, Tetris removed; the page shows no hint" }
+  ]
+}
