@@ -1,0 +1,17 @@
+{
+  "task": "feat-SHOP-40-storefront",
+  "ticket": "SHOP-40",
+  "branch": "feat/SHOP-40-storefront",
+  "mode": "full",
+  "control": "strict",
+  "phase": "build",
+  "approvals": {
+    "spec": "2026-11-18",
+    "plan": "2026-11-18"
+  },
+  "sections": [
+    { "id": "S1", "name": "Serve the page", "status": "pending" },
+    { "id": "S2", "name": "Page logic", "status": "pending" },
+    { "id": "S3", "name": "Page wiring", "status": "pending" }
+  ]
+}
