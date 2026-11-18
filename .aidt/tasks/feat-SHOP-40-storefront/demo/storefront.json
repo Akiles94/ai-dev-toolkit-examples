@@ -1,0 +1,62 @@
+{
+  "title": "The storefront page: browse, filter and fill a cart",
+  "app": { "start": "npm start", "url": "http://localhost:3000" },
+  "device": "desktop",
+  "scenes": [
+    {
+      "title": "Browse, filter and fill the cart",
+      "steps": [
+        { "go": "/" },
+        { "say": "The shop now has a page of its own. Every product is a card with its price and how many are left." },
+        { "wait": 800 },
+        { "say": "Some are running low, and one is gone. The vinyl record is out of stock, so it cannot be added." },
+        { "wait": 800 },
+        { "say": "A shopper can filter by category. Here, only the books." },
+        { "click": { "selector": "#category" } },
+        { "press": "ArrowDown" },
+        { "press": "Enter" },
+        { "wait": 1000 },
+        { "say": "And back to everything." },
+        { "click": { "selector": "#category" } },
+        { "press": "ArrowUp" },
+        { "press": "Enter" },
+        { "wait": 800 },
+        { "say": "Let's add a game to the cart." },
+        { "click": { "selector": "article.card:has-text('Tetris Effect') button" } },
+        { "wait": 800 },
+        { "say": "The cart shows the game. The total is under fifty dollars, so shipping is four ninety-nine." },
+        { "wait": 1200 },
+        { "say": "One more copy, and the order passes fifty dollars. Shipping becomes free." },
+        { "click": { "selector": "article.card:has-text('Tetris Effect') button" } },
+        { "wait": 1500 },
+        { "say": "Now a book." },
+        { "click": { "selector": "article.card:has-text('Pragmatic') button" } },
+        { "wait": 1200 },
+        { "say": "Changed our mind about the game? Remove it." },
+        { "click": { "selector": "#cart-lines li:has-text('Tetris Effect') button" } },
+        { "wait": 1000 },
+        { "say": "The cart updates. With only the book left, we are under fifty dollars again, and shipping comes back." },
+        { "wait": 1500 }
+      ]
+    },
+    {
+      "title": "Other paths",
+      "steps": [
+        { "say": "Stock is checked too. This book has four copies." },
+        { "click": { "selector": "article.card:has-text('Refactoring') button" } },
+        { "click": { "selector": "article.card:has-text('Refactoring') button" } },
+        { "click": { "selector": "article.card:has-text('Refactoring') button" } },
+        { "click": { "selector": "article.card:has-text('Refactoring') button" } },
+        { "wait": 800 },
+        { "say": "On the fifth try, the page says there is no more in stock, and the cart stays as it was." },
+        { "click": { "selector": "article.card:has-text('Refactoring') button" } },
+        { "wait": 1800 },
+        { "say": "The cart also survives a reload." },
+        { "go": "/" },
+        { "wait": 1800 },
+        { "say": "Everything is still there." },
+        { "wait": 1000 }
+      ]
+    }
+  ]
+}

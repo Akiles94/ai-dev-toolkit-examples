@@ -1,0 +1,57 @@
+WEBVTT
+
+1
+00:00:00.044 --> 00:00:05.361
+The shop now has a page of its own. Every product is a card with its price and how many are left.
+
+2
+00:00:06.364 --> 00:00:11.937
+Some are running low, and one is gone. The vinyl record is out of stock, so it cannot be added.
+
+3
+00:00:12.941 --> 00:00:16.459
+A shopper can filter by category. Here, only the books.
+
+4
+00:00:18.557 --> 00:00:19.997
+And back to everything.
+
+5
+00:00:21.884 --> 00:00:23.579
+Let's add a game to the cart.
+
+6
+00:00:25.423 --> 00:00:30.636
+The cart shows the game. The total is under fifty dollars, so shipping is four ninety-nine.
+
+7
+00:00:32.042 --> 00:00:36.396
+One more copy, and the order passes fifty dollars. Shipping becomes free.
+
+8
+00:00:38.923 --> 00:00:39.724
+Now a book.
+
+9
+00:00:41.945 --> 00:00:44.244
+Changed our mind about the game? Remove it.
+
+10
+00:00:46.261 --> 00:00:52.054
+The cart updates. With only the book left, we are under fifty dollars again, and shipping comes back.
+
+11
+00:00:53.761 --> 00:00:56.501
+Stock is checked too. This book has four copies.
+
+12
+00:01:00.880 --> 00:01:06.081
+On the fifth try, the page says there is no more in stock, and the cart stays as it was.
+
+13
+00:01:08.923 --> 00:01:11.164
+The cart also survives a reload.
+
+14
+00:01:13.197 --> 00:01:14.695
+Everything is still there.
