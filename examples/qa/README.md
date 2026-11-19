@@ -1,15 +1,15 @@
-# QA: the storefront page (SHOP-40), two passes and the fixes between them
+# QA: the storefront page (SHOP-40), three passes and the fixes between them
 
-The [qa](https://github.com/Akiles94/ai-dev-toolkit/blob/main/docs/qa.md) agent on the page the [storefront example](../storefront/) built with the full workflow, which the reviewer had passed. Mode `block`, every answer typed by hand. The first pass failed with three 🟡; the fixes went through the workflow as SHOP-41; the second pass found them fixed, and one new 🟡 that a fix brought.
+The [qa](https://github.com/Akiles94/ai-dev-toolkit/blob/main/docs/qa.md) agent on the page the [storefront example](../storefront/) built with the full workflow, which the reviewer had passed. Mode `block`, every answer typed by hand. The first pass failed with three 🟡; the fixes went through the workflow as SHOP-41; the second pass found them fixed, and one new 🟡 that a fix brought; that one was fixed too, and the third pass gave PASS.
 
-| Before: QA-03 | After the fix | QA-05, from the fix |
-|---|---|---|
-| ![After two adds on a phone, the cart is below every card](qa-03-before.png) | ![The cart docked at the bottom, its lines and total in view](qa-03-after.png) | ![With three lines, the third Remove button is cut in half](qa-05.png) |
+| Before: QA-03 | After its fix | QA-05, from that fix | After QA-05's fix |
+|---|---|---|---|
+| ![After two adds on a phone, the cart is below every card](qa-03-before.png) | ![The cart docked at the bottom, its lines and total in view](qa-03-after.png) | ![With three lines, the third Remove button is cut in half](qa-05.png) | ![Three lines, each with its Remove on the same row, all whole](qa-05-after.png) |
 
-*Screenshots of `aidt qa walk` on a phone (390 × 844): walk 09 on SHOP-40, the same walk on SHOP-41, walk 10 on SHOP-41.*
+*Screenshots of `aidt qa walk` on a phone (390 × 844): walk 09 on SHOP-40, the same walk on SHOP-41, walk 10 on SHOP-41, walk 10 after S4.*
 
-- Reports: [pass 1](../../.aidt/tasks/feat-SHOP-40-storefront/qa/block-storefront.md), [pass 2](../../.aidt/tasks/feat-SHOP-40-storefront/qa/block-storefront-pass2.md).
-- [walks/](../../.aidt/tasks/feat-SHOP-40-storefront/qa/walks/): the ten walks the agent wrote; `aidt qa walk <file>` plays any of them again, with no tokens.
+- Reports: [pass 1](../../.aidt/tasks/feat-SHOP-40-storefront/qa/block-storefront.md), [pass 2](../../.aidt/tasks/feat-SHOP-40-storefront/qa/block-storefront-pass2.md), [pass 3](../../.aidt/tasks/fix-SHOP-41-storefront-qa-findings/qa/block-storefront-pass3.md).
+- Walks: [passes 1 and 2](../../.aidt/tasks/feat-SHOP-40-storefront/qa/walks/), [pass 3](../../.aidt/tasks/fix-SHOP-41-storefront-qa-findings/qa/walks/); `aidt qa walk <file>` plays any of them again, with no tokens.
 - [.aidt/app.md](../../.aidt/app.md): its «QA» part, drafted by the agent and approved with the scope.
 - [SHOP-41](../../.aidt/tasks/fix-SHOP-41-storefront-qa-findings/): the fixes' spec, plan and review guides.
 
@@ -20,8 +20,8 @@ The [qa](https://github.com/Akiles94/ai-dev-toolkit/blob/main/docs/qa.md) agent 
 | QA-01 | 1 | 🟡 | «No more in stock» stays on screen after the filter changes, about a product no longer shown | fixed in SHOP-41 |
 | QA-02 | 1 | 🟡 | A `null` or malformed body to `POST /carts/:id/items` answers 500, not 400 | fixed in SHOP-41 |
 | QA-03 | 1 | 🟡 | On a phone the cart is below every card: «Add to cart» shows nothing | fixed in SHOP-41 |
-| QA-04 | 1 | ℹ️ | Whoever has a cart id can read and change that cart | a decision for the user |
-| QA-05 | 2 | 🟡 | On a phone, the docked cart cuts the third line's «Remove» in half, with no sign the list scrolls | brought by the QA-03 fix; a decision for the user |
+| QA-04 | 1 | ℹ️ | Whoever has a cart id can read and change that cart | accepted by the user until accounts exist |
+| QA-05 | 2 | 🟡 | On a phone, the docked cart cuts the third line's «Remove» in half, with no sign the list scrolls | brought by the QA-03 fix; fixed in SHOP-41's S4, PASS in pass 3 |
 
 The storefront had passed review, with 34 tests green. None of these were in its diff as a defect: they show when the page is used, on a phone, after a filter change, or with a body the page never sends.
 
@@ -39,18 +39,27 @@ The storefront had passed review, with 34 tests green. None of these were in its
 | SHOP-41 reviewer | `claude-sonnet-5-5` | — | 1 min 44 s | 464k (395k) | 16.7k | $0.38 |
 | SHOP-41 reviewer, S3 again with the walk's screenshot | `claude-sonnet-5-5` | — | 1 min 4 s | 691k (641k) | 9.9k | $0.29 |
 | QA pass 2: 4 walks, 7 runs, the report | `claude-sonnet-5-5` | — | 1 min 40 s | 773k (729k) | 7.7k | $0.26 |
-| **Total** | | | | | | **$2.45** |
+| QA-05: planner, which sent it to the refiner first | `claude-sonnet-5-5` | 2 | 21 s | 200k (98k) | 2.4k | $0.44 |
+| QA-05: refiner, R6 and R7 in the spec | `claude-sonnet-5-5` | 14 | 1 min | 883k (869k) | 8.5k | $0.23 |
+| QA-05: planner, S4 | `claude-sonnet-5-5` | 15 | 1 min | 736k (725k) | 8.2k | $0.20 |
+| QA-05: builder, S4 | `claude-sonnet-5-5` | 12 | 48 s | 1.2M (1.19M) | 5.4k | $0.21 |
+| QA-05: reviewer, S4 | `claude-sonnet-5-5` | — | 50 s | 512k (450k) | 7.3k | $0.27 |
+| QA pass 3: scope, 3 walks, the report | `claude-sonnet-5-5` | 27 | 1 min 34 s | 948k (878k) | 12k | $0.45 |
+| **Total** | | | | | | **$4.26** |
 
-- **The QA itself: $0.98** for the two passes ($0.73 and $0.26). The walks cost no tokens: each one ran in 2 to 10 seconds. The rest is the fixes, a block like any other.
+- **The QA itself: $1.44** for three passes ($0.73, $0.26 and $0.45). The walks cost no tokens: each one ran in 2 to 10 seconds. The rest, $2.82, is the fixes, two blocks like any other.
+- **The first QA-05 call cost more** ($0.44 for a short answer): the conversation had waited overnight, so its cache had expired and was written again.
 - **The approval round.** The first call after the scope stopped at its first `aidt qa walk`: in the conversation that goes on after a skill's proposal, Claude Code asks before running a command, and headless nobody could answer. The agent asked instead of working around it (no `curl`, no script of its own). In an interactive session that is one click; here it was a second message, and its cost is in the $0.59.
 - **The estimate.** The scope estimated 185,000 tokens; Claude Code counted 1.86 million, most of them the conversation read again from the cache at a tenth of the price. The agent's estimate now counts about 200,000 tokens per walk.
 - **The plan check.** The planner went through `.aidt/practices/plan-check.md`, installed with the QA: it named the older journeys the second pass would walk, and added a note for the offline message.
 
 Measured with Claude Code 2.1.327, headless (`claude -p`), on 2026-11-18. Agents that run apart from the conversation (the QA's first call and second pass, the reviewer) report no turns. With a Claude subscription the runs count toward usage limits instead.
 
-## What changed in the toolkit after this run
+## What changed in the toolkit during this run
 
-The first pass showed two things about `aidt qa walk` itself, fixed before the second:
+Passes 1 and 2 ran on the first version of `aidt qa walk`; pass 3 ran on the one released, after the toolkit's own review. That review (a fresh reviewer on the toolkit's branch) failed the walker for reaching any host from a pre-approved command, and for a «double tap» that waited for the button before each click: a walk now reaches only this machine unless `qa.origins` in the config lists more, and `times` makes quick clicks, so a button that disables itself takes one. Neither changed what passes 1 and 2 found on this page.
+
+The first pass also showed two things, fixed before the second:
 
 - In walk 07, the agent put `as` on each of the intruder's steps, then a `reload` and a `look` without it, meant for the shopper. `as` used to carry over to the next steps, so the intruder reloaded and looked at a blank page, and the report said the shopper's page showed the change: a sentence the walk never showed. Now `as` names who does that one step, a page step for a person with no page open stops the walk and says so, and the agent writes under «Seen» only what the log shows. The finding itself (QA-04, steps 4 to 6) stands.
 - The second pass walked without proposing a scope again, which is what its scope says (the first report's findings and «Not covered»); the agent now says so.
@@ -601,3 +610,398 @@ Walk 02 still stops at step 16, as in pass 1. That step asks for an enabled «Ad
   2. No, open a ticket before checkout.
 
 The report is `.aidt/tasks/feat-SHOP-40-storefront/qa/block-storefront-pass2.md`. The new walk is `.aidt/tasks/feat-SHOP-40-storefront/qa/walks/10-phone-docked-cart-limit.json`. The tool did not show token usage. I did not start or stop the shop and changed no data except carts.
+
+### QA-05, the fix: a fourth section of SHOP-41
+
+The next morning, in the same conversation as SHOP-41. The user had decided: fix QA-05 and walk again; QA-04 accepted until accounts exist, written in `.aidt/app.md` «Known or accepted».
+
+**You:**
+
+```text
+/planner The QA's second pass found QA-05 in .aidt/tasks/feat-SHOP-40-storefront/qa/block-storefront-pass2.md: on a phone the docked cart cuts the third line's Remove button in half, with no sign the list scrolls (walk 10). Add its fix to this task as a fourth section.
+```
+
+**Agent:**
+
+I haven't changed the plan yet, because the spec doesn't cover QA-05 and I can't edit the spec.
+
+**The gap.** `spec.md` is approved for QA-01 to QA-03 only. Its goal names "the three 🟡 findings" of pass 1, and R1 to R5 say nothing about a clipped line or a scroll cue.
+- The closest requirement is R4, which says the cart lines must be visible on a phone. R4 is also what S3 built, and QA-05 is a defect in that build.
+- What counts as fixed is a "what" decision. The QA report says "every line and its Remove fully visible, or an evident way to reach it." Those are two different behaviours, and the plan shouldn't pick between them.
+
+**Decision for you:**
+- **a) Run `/refiner` first (recommended).** It adds one requirement to the approved spec, about 5 lines. For example: **R6** says that on a phone every cart line and its «Remove» button is fully visible, or the list shows a visible sign that it scrolls. It also adds acceptance criteria for a 3-line and a 4-line cart, QA-05 in the goal, and walk 10 as the source. I then plan S4 against R6.
+- **b) I plan S4 under R4 as it stands.** This is faster, but there would be no requirement for the scroll cue, and the plan would cover a behaviour the spec doesn't name.
+
+**Technical approach.** This is only a preview of what I'd put in S4, and it depends on your answer. It is the same CSS-only approach, in `public/style.css` and `public/app.js` if needed, with no new dependency.
+1. On phones, put each line's «Remove» on the same row as the name and price. A line is then about half as tall, so three lines fit in the 40vh dock.
+2. Show a scroll cue (a fade or a visible scrollbar) when the list still overflows, for 4 or more lines.
+3. Test: R4 and R6 are CSS, so there is no automated test, as in S3. They are checked by hand in `/reviewer`, then by walk 10 plus a new 4-line walk in a third QA pass.
+
+Tell me **a** or **b**. For **a**, run `/refiner` and come back to `/planner` when the spec is approved.
+
+**You:**
+
+```text
+/refiner Option a: add QA-05 to this task's spec, from .aidt/tasks/feat-SHOP-40-storefront/qa/block-storefront-pass2.md (walk 10).
+```
+
+**Agent:**
+
+I'm on `fix/SHOP-41-storefront-qa-findings`, the right branch, so I'm resuming from its `state.json`. The mode (`light`) and control (`strict`) stay as they are.
+
+The QA report's expected behaviour for QA-05 has two parts: "fully visible, or an evident way to reach it". Three decisions are left, and I can't answer them from the report.
+
+1. **Which carts must show completely?** A fully visible cart means every line and its «Remove» whole.
+   - a) Up to 3 lines (the case in walk 10, "a normal cart"). From 4 lines on, the list may scroll, with a visible sign that it does. (Recommended.)
+   - b) Up to 4 lines. Walk 10 has 3, and QA says a third pass would walk 4.
+   - c) Every line always, however long the cart. The cart would grow past the 40% limit and could cover the cards again.
+2. **When the list does scroll, what is the minimum the person must see?** a) A visible sign, such as a fade, a partly shown next line or a scrollbar, so they know there is more. The message and totals stay in view. (Recommended.) b) The sign is optional if the last visible line is whole.
+3. **Which screens?** The QA tool uses 844 px of height, and shorter phones and landscape were not tried.
+   - a) The requirement is for a 390 × 844 phone, as in walk 10. Shorter phones and landscape go in "Out of scope", as the QA report lists them under "Not covered". (Recommended.)
+   - b) It also covers a shorter phone height, such as 390 × 667.
+
+Say "all recommended" or give your changes. I'll then add this to the spec:
+- **R6** and its acceptance criteria, with the 3-line and 4-line cases.
+- QA-05 in the goal and the source.
+- The decisions and out of scope.
+
+**You:**
+
+```text
+All recommended.
+```
+
+**Agent:**
+
+The spec now covers QA-05, as a draft awaiting your approval. It is at `.aidt/tasks/fix-SHOP-41-storefront-qa-findings/spec.md`. `state.json` has `phase: refine`, and the spec approval is cleared until you approve again. The plan approval and the three reviewed sections are untouched.
+
+**Goal:** the goal now reads as four findings: QA-01, QA-02, QA-03 and QA-05. The aim is a third QA pass that gives PASS.
+
+**New requirements**
+- **R6:** on a 390 × 844 phone, a cart of up to 3 lines shows every line and its «Remove» whole, together with the message and the totals, with no scrolling inside the cart. The examples are the walk 10 cart (Pragmatic Programmer, Tetris Effect, Refactoring × 4), the same cart with «No more in stock» shown, and the same cart after picking Music.
+- **R7:** on the same phone, a cart with more lines than fit scrolls and shows a visible sign of it. The message and the totals stay in view.
+
+**Out of scope, added**
+- Phones shorter than 844 px and landscape.
+- Changing the catalogue or the stock.
+
+**Decisions, recorded with the discarded alternative**
+- Up to 3 lines whole, not 4 or unlimited.
+- The scroll sign is required.
+- 390 × 844 only.
+
+**R7 can't happen yet.** The catalogue has 4 products and Kind of Blue has 0 stock, so a cart has at most 3 lines. R6 covers every cart the shop can build today. R7's acceptance criterion uses a hypothetical 5-line cart, and I noted this under Edge cases. That also means the QA's suggested 4-line walk can't be run as written.
+
+**To decide at approval:**
+- **Keep R7** (as drafted): it is a rule for when the catalogue grows, and it can only be checked after that.
+- **Drop R7 to "Out of scope"** until a longer cart is possible. Then S4 covers only R6, and the plan is smaller with nothing untestable.
+
+I'd drop it, but you chose the scroll sign, so I kept it. Do you approve the spec as drafted, or with R7 dropped? On approval I'll set `Status: approved`, `phase: plan` and the spec approval date in `state.json`. After that you can run `/planner`.
+
+**You:**
+
+```text
+Approved.
+```
+
+**Agent:**
+
+The spec is approved as drafted, with R7 kept. It now has `Status: approved`. `state.json` has `phase: plan` and `approvals.spec` set to 2026-11-19. The plan approval from 2026-11-18 is still recorded, but the plan will change when S4 is added.
+
+Nothing is committed yet. The spec and `state.json` changes are in the working tree.
+
+Next step: run `/planner` to add S4 for R6 and R7. I haven't started it.
+
+**You:**
+
+```text
+/planner
+```
+
+**Agent:**
+
+I've read the plan, the walk 10 report and the CSS. Before I write S4, one decision is open: how to make the cart fit.
+
+**The cause (from the CSS).** The docked cart is capped at 40vh, which is 337 px on 844 px of height. Its content for the 3-line walk-10 cart is about 390 px: each line is about 72 px because «Remove» sits on its own row, and the message paragraph has about 32 px of default margin around it. So the list really is squeezed, which is the clipped button. The blank gap QA saw under the button is that message margin, not free space. I'm confident of this from reading the CSS, but I haven't measured it in a browser.
+
+**1. How to make 3 lines fit (R6).**
+- **a) Compact the cart on phones, same 40vh cap (recommended).**
+  - «Remove» moves onto the same row as the name and price, which makes each line about half as tall.
+  - The message margins and the panel padding get smaller.
+  - The cart needs about 270 px, which is under 337 px.
+  - The risk is a smaller tap target for «Remove», so I'd keep its padding and a comfortable minimum height.
+- **b) Raise the cap to about 50vh.**
+  - It is one number, but the cart covers half the phone and hides more of the cards.
+  - It also fails again with a slightly taller cart.
+
+**2. The scroll sign (R7).**
+- **a) "Scroll shadows": CSS only (recommended).** A soft fade appears at the top or bottom edge of the list only while there is more to scroll to. Phones hide overlay scrollbars, so a scrollbar alone is not a sign.
+- **b) A thin always-visible scrollbar.** It is not reliable on phones.
+
+**What I'd plan, whatever you pick.** One section, S4, CSS only in the narrow-screen block of `public/style.css`, about 15 to 25 lines, depending on S3.
+- **Automated tests:** none, as for S3, since there is no browser tool.
+- **R6:** checked by hand and by replaying walk 10 at 390 × 844.
+- **R7:** cannot be walked, because the catalogue only allows 3 lines. It is checked by hand by adding extra lines in the browser's DevTools, and I'll say that in the plan.
+
+Say "all recommended" or give your changes. I'll then write S4 into the plan.
+
+**You:**
+
+```text
+All recommended.
+```
+
+**Agent:**
+
+The plan is updated at `.aidt/tasks/fix-SHOP-41-storefront-qa-findings/plan.md` with S4 for QA-05. It is a draft awaiting your approval. S1 to S3 are untouched.
+
+**Approach for S4:** CSS only, in the narrow-screen block of `public/style.css`, with no markup or JavaScript change.
+- **Cause:** read from the CSS, not measured in a browser. The 3-line cart needs about 390 px and the dock is capped at 337 px. Each line takes about 72 px because «Remove» has its own row, and the message keeps about 32 px of default margin. That margin is the blank gap QA saw.
+- **Fix:**
+  - Each line is one row (name, price, «Remove») with a comfortable tap size.
+  - The message margins and the panel padding are smaller, so the cart needs about 270 px.
+  - A CSS scroll-shadow fade on the list shows when there is more to scroll to.
+- **Discarded:** a 50vh cap, and a scrollbar as the scroll sign.
+
+| # | Name | Main files | Est. lines | Covers |
+|---|---|---|---|---|
+| S1 | Bad cart-item bodies (built, PASS) | `src/server.ts` | 16 | R3 |
+| S2 | Message clears (built, PASS) | `public/shop-view.js`, `public/app.js` | 16 | R1, R2 |
+| S3 | Phone cart (built, PASS) | `public/style.css` | 25 | R4, R5 |
+| **S4** | **Phone cart fits** | `public/style.css` | ~20 | **R6, R7** (keeps R4, R5) |
+
+**Tests:**
+- **R6:** no automated test, since there is no browser tool. It is checked by replaying walk 10 at 390 × 844 (steps 6 and 10) and by hand in `/reviewer`.
+- **R7:** by hand, with 5 lines added in the browser's DevTools. No walk can reach it with today's catalogue.
+
+**Plan check added:**
+- The compact row must also look right with 0, 1, 2 and 3 lines.
+- Walks 02, 09 and 10, and the desktop cart, are re-checked.
+- The 40vh cap stays, so R4 still holds.
+
+**Risks:**
+- The tap target for «Remove» could end up too small.
+- R7 is never walked until the catalogue grows.
+- A shorter phone or landscape may still clip. That is out of scope in the spec.
+
+Do you approve this plan? If you do, I'll set `Status: approved`, set `phase: build`, record the plan approval date, and add S4 to `state.json` as `pending`. S1 to S3 stay as reviewed. After approval you can continue with `/builder`.
+
+**You:**
+
+```text
+Approved.
+```
+
+**Agent:**
+
+The plan is approved. `plan.md` now has `Status: approved`. `state.json` has `phase: build`, `approvals.spec` and `approvals.plan` both set to 2026-11-19, and S4 added as `pending`. S1 to S3 stay `reviewed` with PASS.
+
+Nothing is committed yet. The spec, plan and `state.json` changes are in the working tree, and the builder will commit them with S4.
+
+Next step: run `/builder` to build S4 (phone cart fits). I haven't started it.
+
+**You:**
+
+```text
+/builder
+```
+
+**Agent:**
+
+**S4 · Phone cart fits is built and ready for your review.** It is not committed yet. The amended spec and plan are committed separately as `943854e`.
+
+**What it does:** CSS only, inside the `max-width: 40rem` block of `public/style.css`. The markup, the JavaScript and the desktop rules are untouched.
+- **R6:** each cart line is one row (name, price, «Remove»). The message has smaller margins and the panel has smaller padding. By my reading of the CSS, the 3-line cart then needs about 270 px against the 337 px cap.
+- **R7:** the list has CSS "scroll shadows", a soft edge shadow that shows only on the side that still has more to scroll to.
+
+**Open:** `public/style.css`, the new rules in the narrow-screen block, with `@guide` comments.
+
+**Decisions not in the plan:**
+- `public/style.css`: «Remove» has `min-height: 2.75rem` (44 px), the tap size I said I'd keep. The plan only said "about 44 px".
+- `public/style.css`: the reserved height of the message (the base `min-height`) is kept, and only its margins shrink on phones.
+
+**Verify:**
+- `npm test` gives 41 passing, 0 failing.
+- By hand at 390 × 844, replay walk 10 with `aidt qa walk .aidt/tasks/feat-SHOP-40-storefront/qa/walks/10-phone-docked-cart-limit.json`. Steps 6 and 10 should show all three «Remove» buttons whole, then the totals, with no clipped button, and «No more in stock» in view.
+- For R7, add extra `li` lines in DevTools to make 5 lines. The list should scroll, with a shadow on the side that has more, and the message and totals stay in view.
+- At 1280 px the page should be as before.
+- I can't open a browser from here. The 270 px figure and the shadows are untested, so please check them at phone width.
+
+**Size:** 30 lines added (about 12 of them guide comments that go away), no deletions, no test lines. `aidt check` says 7/7 requirements have a test, but R6 and R7 are only matched by the older SHOP-40 tests with the same ids. S4 has no automated test, as planned, so don't read that 7/7 as coverage for R6 and R7.
+
+Questions, changes, or an explicit yes? On a yes I'll remove the guide comments, run the checks again and commit S4. Then `phase` becomes `review` and you can hand off to `/reviewer`.
+
+The user replayed walk 10 against S4 (its screenshot is the last one above).
+
+**You:**
+
+```text
+I replayed the QA's walk 10 at 390 × 844: the three lines with their Remove buttons are whole, with «No more in stock» and the totals in view. Yes, commit S4.
+```
+
+**Agent:**
+
+S4 is committed as `5549861`, and all four sections of SHOP-41 are built. `state.json` now has `phase: review` (committed as `5fe63ba`). Nothing is pushed.
+
+| Section | Commit | Reviewable lines | Covers |
+|---|---|---|---|
+| S1 · Bad cart-item bodies | `f5f37a5` | 16 | R3 |
+| S2 · Message clears | `920a964` | 16 | R1, R2 |
+| S3 · Phone cart | `8694974` | 25 | R4, R5 |
+| S4 · Phone cart fits | `5549861` | 22 | R6, R7 |
+
+- **Checks:** `npm test` gives 41 passing, 0 failing. `aidt check` shows every section within the 300-line limit.
+- **Checked by hand:**
+  - You replayed walk 10 at 390 × 844. The three lines and their «Remove» buttons are whole, with the message and totals in view. That covers R6.
+  - R7 (the scroll shadows) hasn't been checked in a browser. It needs extra lines added in DevTools, because no walk can build a cart longer than 3 lines.
+  - R4 and R5 passed in the earlier review.
+- **State:** S1 to S3 are still marked `reviewed` with PASS from the first review. S4 is `approved` and has not been reviewed yet.
+
+Next step: run `/reviewer` on S4, then a third QA pass. I haven't started either.
+
+**You:**
+
+```text
+/reviewer S4. The QA's walk 10 replayed at 390 × 844 on S4 (screenshot .aidt/qa/10-phone-docked-cart-limit/06-shopper.png) shows the three lines with their Remove buttons whole, «No more in stock» and the totals in view.
+```
+
+**Agent:**
+
+**S4 · Phone cart fits: PASS** on commit `5549861`.
+
+**Walk 10 replay.** I read `.aidt/qa/10-phone-docked-cart-limit/06-shopper.png`, a 780 × 1688 capture, which is 2× of 390 × 844. It shows:
+- The three lines (The Pragmatic Programmer, Tetris Effect, Refactoring × 4), each with its Remove button whole.
+- «No more in stock» in red.
+- Subtotal $249.94, Shipping $0.00 and Total $249.94, all in view, with nothing cut and no gap.
+
+**Gates on the last commit**
+- `npm test`: 41/41 pass.
+- `aidt check`: S4 has 22 reviewable lines, and 7/7 requirements have a test.
+- `aidt clean --check`: no guide comments left.
+- `aidt context check`: ok.
+- `aidt structure audit`: two findings, `src/utils.ts` and `src/types.ts`. S4 does not touch them; they are the planned migration.
+
+**Requirements**
+- **R6:** met (`public/style.css:119-137`, plus the screenshot).
+- **R4:** still holds; the message and totals are in view.
+- **R5:** still holds; all 22 new lines sit inside `@media (max-width: 40rem)`, so desktop rules are unchanged.
+- **R7:** partial. The scroll-shadow background (`public/style.css:148-153`) is built correctly (white `local` layers over grey `scroll` shadows), but nobody has seen it rendered. A 5-line cart cannot be built with today's catalogue, and the plan calls for checking it by hand in DevTools. This was not weighed as a FAIL because the spec says R7 cannot occur yet. Add 5 lines in DevTools before the third QA pass.
+
+**Findings:** none.
+
+**Quality**
+- Readability 🟡: the four-layer background has no comment saying why. I suggested adding one.
+- Maintainability 🟡: the `#fff` in the gradients must match the panel colour at line 34.
+- Tests 🟡: no automated test, by plan.
+- Structure and Practices ✅; Performance and Security ➖.
+
+**Files updated**
+- Added `.aidt/tasks/fix-SHOP-41-storefront-qa-findings/review/s04-phone-cart-fits.md`.
+- Updated `.aidt/tasks/fix-SHOP-41-storefront-qa-findings/review/index.md` with the S4 row, R6 and R7, and a warning about R7.
+- Updated `.aidt/tasks/fix-SHOP-41-storefront-qa-findings/state.json` with S4 as `reviewed`, `PASS`.
+
+All four sections are now PASS. Do you want me to prepare the delivery with `aidt stack prepare`? That creates one branch and one draft PR per section. Publishing and merging each need a separate yes. Given `AGENTS.md`, you may prefer to keep SHOP-41 as the example and skip it.
+
+### Pass 3
+
+A new conversation, with the shop restarted on S4.
+
+**You:**
+
+```text
+/qa block, third pass on fix/SHOP-41-storefront-qa-findings, which the user approved: QA-05 of the second pass (.aidt/tasks/feat-SHOP-40-storefront/qa/block-storefront-pass2.md), fixed in S4. The shop is running the fix at http://localhost:3000 (restarted).
+```
+
+**Agent:**
+
+**Scope proposal for a third QA pass on SHOP-41, awaiting your yes.** Nothing has been walked or written yet.
+
+The caller gave no mode or scope approval, so I did only step 1 and stopped. The shop has not been checked: I may only run `git` and `aidt qa walk`, so I did not probe `http://localhost:3000/products`. Please confirm it is running, or run `npm start`.
+
+**Mode:** `block`, third pass, on branch `fix/SHOP-41-storefront-qa-findings` at `b5930fa`. The tree is clean, so the verdict can be bound to that commit.
+
+**Journeys changed**
+- **QA-05 (S4, `public/style.css`):** on a 390 × 844 phone, the docked cart shows one row per line, whole «Remove» buttons, and scroll shadows on the list.
+- **QA-01 and QA-02 (S2):** the «No more in stock» message clears on a filter change and on any new action.
+- **QA-02 (S1):** `POST /carts/:id/items` answers 400 `INVALID_ITEM` when the body is not a JSON object.
+- **QA-03 (S3):** the cart is docked and visible on a phone.
+
+**Journeys touched**
+- **Browse and filter:** the message-clearing change assumes every action resets the message.
+- **Add and stock limit (walk 02):** the message must clear on the next action and must not clear too early.
+- **Remove:** must clear the message and keep the dock layout intact.
+- **Desktop layout (R5):** the phone CSS must not leak to 1280 px.
+- **Reload, offline and foreign cart (walks 04, 06, 07):** the message and dock changes could break these.
+
+**Promises:** the page texts in `.aidt/app.md` «QA»: "No more in stock", "Only N left", "Out of stock", "Something went wrong. Try again.", and shipping "free from $50". Also the acceptance table R1 to R7 in the SHOP-41 `spec.md`.
+
+**Not built yet, on purpose**
+- A 5-line cart: the catalogue allows at most 3 lines, so R7 cannot be walked.
+- Checkout and accounts.
+- Cart badge, quantity selector, loading state.
+- Tablet widths and phones shorter than 844 px.
+- These are not findings.
+
+**Known and accepted:** QA-04 (whoever has a cart id can read and change that cart). It is listed as accepted until accounts exist, but your decision on it is still open in `.aidt/status.md`. I would not report it again unless it gets worse.
+
+**People:** a shopper on desktop, a shopper on a phone, and someone with bad intentions. The last one uses another person's cart id and `request` calls with bodies the page never sends (`null`, `[]`, `5`, `"abc"`, broken JSON, qty 0, a negative or huge qty, an unknown product).
+
+**Walks, about 9** (existing walks 02, 08, 09 and 10 are rerun first):
+1. **Walk 10 rerun (QA-05):** 3 lines on a phone, every «Remove» whole, message and totals in view.
+2. **Phone, stock limit (R4, R6):** the fifth Refactoring add shows the message, lines and totals whole, then Music filter keeps the cart intact.
+3. **QA-01:** the message clears on a category change, an add and a remove.
+4. **Desktop 1280:** layout unchanged (R5).
+5. **Hostile bodies (QA-02, R3):** each bad body gets 400 `INVALID_ITEM`, and valid and qty 0 bodies behave as before.
+6. **Double tap on «Add to cart» (`times: 2`):** with the message showing and the stock limit near.
+7. **Reload, cleared storage and an unknown cart:** on a phone with the dock.
+8. **Offline add:** the message tied to the failed call.
+9. **Another person's cart:** read and remove on the same page and via `request`.
+
+Not walkable: 4 or more lines (the catalogue has at most 3) and R7's scroll cue. I will say so in the report.
+
+**App files:** `.aidt/app.md` already has a complete «QA» part, so no draft is needed. No extra `qa.origins` are needed, since the shop is on localhost only. The qa agent will not start or stop the shop, and walks change only carts.
+
+**Cost**
+- About 9 walks × 200 000 + 150 000 ≈ **1.95 M tokens**, most of it cache reads.
+- That is roughly 9 × $0.07 ≈ $0.65 at API prices on the `balanced` tier (`models.agents.qa`, unless the config says otherwise).
+- The walks themselves cost no tokens.
+- If you only want to check the fixes (walks 10, 02, 08 and a 400-body check), it is about 4 walks, ≈ 0.95 M tokens.
+
+**Decisions for you**
+1. **Scope:**
+   1. Approve the 9-walk scope above (recommended).
+   2. Approve the narrower fixes-only scope (4 walks).
+   3. Change the scope.
+2. **Is the shop running at `http://localhost:3000`?** I cannot check it myself, so reply "scope approved" and confirm it answers, or run `npm start` first.
+
+Report path after approval: `.aidt/tasks/fix-SHOP-41-storefront-qa-findings/qa/block-storefront-pass3.md`, with walks in `.aidt/tasks/fix-SHOP-41-storefront-qa-findings/qa/walks/`.
+
+The proposal walked more than the user had approved for this pass; the answer narrowed it.
+
+**You:**
+
+```text
+Scope approved, narrowed to what I approved for this pass: QA-05 only. Rerun walk 10, the phone stock-limit case (your walk 2), and the desktop layout at 1280 (R5), which S4 could break; nothing else. The shop is running at http://localhost:3000, and aidt qa walk is approved for this session.
+```
+
+**Agent:**
+
+**QA pass 3 verdict: PASS for QA-05, the scope you approved. I found no new problems.** I ran only that scope, three walks against `b5930fa`. The screenshots and the log confirm the three checks below.
+
+- **QA-05 is fixed (walk 10, rerun).** With three lines in the cart on a 390 × 844 phone, every «Remove» button is whole. Subtotal, Shipping and Total sit below them with no scrolling inside the cart. «No more in stock» appears between the last line and the totals. After the Games and Music filters and after a reload, the cart looks the same, with nothing clipped or overlapping.
+- **Phone stock limit (walk 11, new).** The fifth Refactoring add shows the message in view with the lines and totals whole. The Music filter leaves the cart intact.
+- **Desktop at 1280 (walk 12, new).** I compared it with the pass-2 desktop screenshot. The card grid, the cart panel's place and width, and «Remove» under each line are the same. The cart is not docked.
+
+**What was not covered**
+- **Needs a larger catalogue:** R7 (the scroll cue on a cart of 5 or more lines) can't be walked, because the catalogue allows at most 3 lines.
+- **Not re-run after S4, as you asked:** QA-01, QA-02, offline, foreign cart and double tap. QA-04 is unchanged and still waits for your decision.
+
+**Notes, not findings**
+- **Gap above Subtotal:** with no message, there is about 30 px of blank space above «Subtotal» on the phone. It clips nothing.
+- **Dock over the Tetris button:** the dock covers the lower part of the Tetris Effect «Add to cart» button. I didn't scroll down to check that the last card stays reachable.
+- **Console and server:** each walk shows one console error, the expected 409 on the fifth add. There were no page errors and no 5xx.
+
+The shop was not started or stopped, and only three carts were created.
+
+The new files are the report at `.aidt/tasks/fix-SHOP-41-storefront-qa-findings/qa/block-storefront-pass3.md`, plus walks 10, 11 and 12 in `.aidt/tasks/fix-SHOP-41-storefront-qa-findings/qa/walks/`. Nothing is committed or pushed. Do you want the full 9-walk scope on `b5930fa` before merging?
