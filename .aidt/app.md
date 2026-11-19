@@ -26,7 +26,7 @@
 ## QA
 
 - **Journeys and promises:** the acceptance table of the block's `spec.md` (`.aidt/tasks/<task-id>/spec.md`) and `AGENTS.md` «Flows». Page texts that promise something: "No more in stock", "Only N left", "Out of stock", "Something went wrong. Try again.", shipping "free from $50".
-- **Known or accepted:** none yet.
+- **Known or accepted:** QA-04 (SHOP-40 QA, pass 1): whoever has a cart id can read and change that cart. Accepted by the user until accounts exist; revisit before checkout.
 - **Start/stop:** the shop is normally already running at `http://localhost:3000`; the qa agent does not start or stop it. If it does not answer, ask the user to run `npm start`.
 - **Browsers:** desktop Chromium via `aidt qa walk` (a `phone` device for narrow layouts).
 - **Mail catcher:** none (the shop sends no email).
