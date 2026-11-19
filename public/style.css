@@ -116,7 +116,24 @@ button:disabled {
     display: flex;
     flex-direction: column;
     max-height: 40vh;
+    padding: 0.75rem;
     box-shadow: 0 -2px 6px rgb(0 0 0 / 0.18);
+  }
+
+  #cart li {
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    padding: 0.25rem 0;
+  }
+
+  #cart li button {
+    grid-column: auto;
+    margin-top: 0;
+    min-height: 2.75rem;
+  }
+
+  #message {
+    margin: 0.25rem 0;
   }
 
   #cart h2 {
@@ -128,6 +145,11 @@ button:disabled {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    background:
+      linear-gradient(#fff 30%, transparent) top / 100% 1.5rem no-repeat local,
+      linear-gradient(transparent, #fff 70%) bottom / 100% 1.5rem no-repeat local,
+      linear-gradient(rgb(0 0 0 / 0.2), transparent) top / 100% 0.5rem no-repeat scroll,
+      linear-gradient(transparent, rgb(0 0 0 / 0.2)) bottom / 100% 0.5rem no-repeat scroll;
   }
 
   #message,
