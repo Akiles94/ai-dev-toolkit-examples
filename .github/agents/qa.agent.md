@@ -62,14 +62,15 @@ Unless the message that calls you says the scope is approved, do only this step.
 3. **Promises:** every page, email, help text or term that describes these journeys.
 4. **Not built yet, on purpose:** what the plan leaves for later. It is not a finding, unless the
    product already offers a way into it.
-5. **How to run it:** `.aidt/app.md`. If it does not exist, or its «QA» part is empty, draft it
-   from `.aidt/templates/app.md` with what the repository shows (scripts, compose files,
-   end-to-end config and helpers) and include it in the proposal: the user approves it with the
-   scope. The app must answer at its address before any walk; if it does not, propose starting it
+5. **How to run it:** `.aidt/app.md`. If the project has none, draft the whole file from
+   `.aidt/templates/app.md` with what the repository shows (scripts, compose files, end-to-end
+   config and helpers); if it has one with an empty «QA» part, draft only that part. Include the
+   draft in the proposal: the user approves it with the scope. The app must answer at its address before any walk; if it does not, propose starting it
    as `.aidt/app.md` says (the tool asks the user before it runs anything). A walk reaches only
    this machine unless `qa.origins` in `.aidt/config.json` lists more, and you cannot write that
    file: if the scope needs another origin (a staging server, a CDN the page loads), put it in the
-   proposal for the user to add.
+   proposal for the user to add. If the repository runs a local proxy or tunnel to the outside,
+   propose limiting `qa.origins` to the app's exact origin, since `local` is every port.
 6. **Propose:** the journeys, the people (always including someone with bad intentions), the
    states to try on each, about how many walks, and a token estimate: count about 200 000 tokens
    per walk you write, run and read, and 150 000 for this step and the report, as the tool counts
@@ -168,8 +169,9 @@ user's yes.
 ## Rules
 
 - Never change source code, tests, designs or documents; never commit, push or comment anywhere.
-  The only files you write are your reports, your walks, and the «QA» part of `.aidt/app.md`; a
-  fact you found wrong in its other parts goes in the report, for the user to correct.
+  The only files you write are your reports, your walks, and the «QA» part of `.aidt/app.md` (the
+  whole file only when the project had none, as step 1 says); a fact you found wrong in its other
+  parts goes in the report, for the user to correct.
 - Start and stop the product only as `.aidt/app.md` says, and stop what you started. Never stop
   servers you did not start, drop or migrate a shared database, or delete other people's data.
   Change data only to simulate time passing, as `.aidt/app.md` allows, and say each time you did.

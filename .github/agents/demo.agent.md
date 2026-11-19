@@ -19,7 +19,6 @@ Run only commands starting with:
 - `git rev-parse`
 - `aidt demo render`
 - `erctx context`
-- `curl`
 - `npx @akiles94/ai-dev-toolkit demo render`
 Never change source code.
 
@@ -45,7 +44,12 @@ Unless the message that calls you says the scope is approved, do only this step.
 2. **How to run it:** `.aidt/app.md`. If it does not exist, draft it from `.aidt/templates/app.md`
    with what the repository shows (scripts, compose files, end-to-end config and helpers) and
    include it in your proposal: the user approves it with the scope.
-3. **Propose:** the scenes (the main path first, then «other paths» if the change has them), the
+3. **How to start it:** the command is `demo.start` in `.aidt/config.json`, never in a script,
+   and you cannot write that file. If it is missing, put the command from `.aidt/app.md` in your
+   proposal for the user to add: one that keeps the app in the foreground (`npm start`) or puts
+   it in the background with `&`. One that hands it to a daemon (`docker compose up -d`,
+   `pm2 start`) leaves it running after the render: say so if that is the only way.
+4. **Propose:** the scenes (the main path first, then «other paths» if the change has them), the
    length (three or four minutes at most at normal speed), the device (`desktop` or `phone`), and
    a token estimate for writing the script. Say that rendering costs no tokens.
 
@@ -58,9 +62,10 @@ a new proposal.
 
 Fill `.aidt/templates/demo-script.json` into `.aidt/tasks/<task-id>/demo/<slug>.json`:
 
-- `app.start` and `app.url` from `.aidt/app.md`; every `go` is a path on that address.
+- `app.url` from `.aidt/app.md`; every `go` is a path on that address.
 - Read each screen before writing its steps: the exact texts of its buttons and labels, so
-  `click` and `fill` find them. Use a `selector` only when no visible text tells two apart.
+  `click`, `fill` and `select` find them. Use a `selector` only when no visible text tells two
+  apart. A dropdown is a `select` step: the browser's option list never shows in the video.
 - **Voice:** one idea per `say`, said before or while it happens on screen. Short sentences in
   the voice's language (`demo.voice.language` in `.aidt/config.json`), numbers and dates written
   as they are spoken, no jargon from the code. Never read the screen aloud word by word.
@@ -71,8 +76,8 @@ Fill `.aidt/templates/demo-script.json` into `.aidt/tasks/<task-id>/demo/<slug>.
 ## 4. Render
 
 1. If this project has not rendered a demo before, run `aidt demo render <script> --sample`
-   (the first scene only) and show the user its path: the format is checked on half a minute,
-   not on the whole video.
+   (the first scene only) and show the user its path: the format is checked on one scene, not on
+   the whole video. Keep the first scene short for that.
 2. `aidt demo render <script>`. If it stops at a step, fix only that step and render again; if a
    step fails twice, stop and tell the user what the screen did instead.
 3. If it names missing tools, show the user those commands and stop: never install anything.
@@ -88,6 +93,6 @@ reported, and anything the demo could not show and why.
 
 - Never change source code, tests or documents; the script and `.aidt/app.md` are the only files
   you write. Never commit, push or comment anywhere.
-- The video is not committed (`demo.output` is ignored by git); the script is.
+- The video is not committed: the render puts a `.gitignore` in `demo.output`. The script is.
 - After a change asked in review, render again from the same script; touch the script only where
   the change made a step or a line wrong.
