@@ -13,6 +13,6 @@
     { "id": "S1", "name": "Bad cart-item bodies", "status": "reviewed", "verdict": "PASS", "commit": "f5f37a5", "lines": 16 },
     { "id": "S2", "name": "Message clears", "status": "reviewed", "verdict": "PASS", "commit": "920a964", "lines": 16 },
     { "id": "S3", "name": "Phone cart", "status": "reviewed", "verdict": "PASS", "commit": "8694974", "lines": 25 },
-    { "id": "S4", "name": "Phone cart fits", "status": "approved", "commit": "5549861", "lines": 22 }
+    { "id": "S4", "name": "Phone cart fits", "status": "reviewed", "verdict": "PASS", "commit": "5549861", "lines": 22 }
   ]
 }
