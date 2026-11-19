@@ -6,6 +6,7 @@ import {
   cartPanelView,
   filterByCategory,
   formatCents,
+  messageAfter,
   stockLabel,
 } from "../public/shop-view.js";
 
@@ -108,4 +109,17 @@ test("R7: a cart line whose product is not in the catalogue does not break the p
   assert.equal(view.lines.length, 1);
   assert.equal(view.lines[0].name, "p-99");
   assert.equal(view.lines[0].qty, 2);
+});
+
+test("R1: messageAfter clears «No more in stock» when the filter changes (walk 02 step 14)", () => {
+  assert.equal(messageAfter("filter-changed", "No more in stock"), "");
+});
+
+test("R2: messageAfter clears the message on a successful add and on a remove", () => {
+  assert.equal(messageAfter("added", "No more in stock"), "");
+  assert.equal(messageAfter("removed", "No more in stock"), "");
+});
+
+test("R2: messageAfter keeps the message for an event that does not clear it", () => {
+  assert.equal(messageAfter("hovered", "No more in stock"), "No more in stock");
 });

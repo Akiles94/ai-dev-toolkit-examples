@@ -1,0 +1,18 @@
+{
+  "task": "fix-SHOP-41-storefront-qa-findings",
+  "ticket": "SHOP-41",
+  "branch": "fix/SHOP-41-storefront-qa-findings",
+  "mode": "light",
+  "control": "strict",
+  "phase": "review",
+  "approvals": {
+    "spec": "2026-11-19",
+    "plan": "2026-11-19"
+  },
+  "sections": [
+    { "id": "S1", "name": "Bad cart-item bodies", "status": "reviewed", "verdict": "PASS", "commit": "f5f37a5", "lines": 16 },
+    { "id": "S2", "name": "Message clears", "status": "reviewed", "verdict": "PASS", "commit": "920a964", "lines": 16 },
+    { "id": "S3", "name": "Phone cart", "status": "reviewed", "verdict": "PASS", "commit": "8694974", "lines": 25 },
+    { "id": "S4", "name": "Phone cart fits", "status": "reviewed", "verdict": "PASS", "commit": "5549861", "lines": 22 }
+  ]
+}

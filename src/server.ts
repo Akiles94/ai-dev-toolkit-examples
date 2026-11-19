@@ -12,6 +12,18 @@ function send(res: ServerResponse, status: number, body: unknown): void {
   res.end(JSON.stringify(body));
 }
 
+type ItemBody = { productId?: unknown; qty?: unknown };
+
+async function readItemBody(req: IncomingMessage): Promise<ItemBody | undefined> {
+  try {
+    const body = await readJson(req);
+    const isObject = typeof body === "object" && body !== null && !Array.isArray(body);
+    return isObject ? (body as ItemBody) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function cartView(cartId: string) {
   const cart = getCart(cartId);
   if (!cart) return undefined;
@@ -42,8 +54,8 @@ async function route(req: IncomingMessage, res: ServerResponse): Promise<void> {
       return view ? send(res, 200, view) : send(res, 404, { error: "CART_NOT_FOUND" });
     }
     if (req.method === "POST" && parts[2] === "items") {
-      const body = (await readJson(req)) as { productId?: unknown; qty?: unknown };
-      if (typeof body.productId !== "string" || !isPositiveInt(body.qty)) {
+      const body = await readItemBody(req);
+      if (!body || typeof body.productId !== "string" || !isPositiveInt(body.qty)) {
         return send(res, 400, { error: "INVALID_ITEM" });
       }
       const result = addItem(cartId, body.productId, body.qty);

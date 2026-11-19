@@ -1,0 +1,16 @@
+{
+  "title": "J3 Remove a line and the last line",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "shopper": { "device": "desktop" } },
+  "steps": [
+    { "go": "/" },
+    { "click": { "selector": "article:has-text('Pragmatic') button" } },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "look": "Pragmatic x1 39.99, Tetris x2 59.98, subtotal 99.97 shipping 0.00 total 99.97" },
+    { "click": { "selector": "li:has-text('Tetris') button" } },
+    { "look": "only Pragmatic x1; subtotal 39.99 shipping 4.99 total 44.98" },
+    { "click": { "selector": "li:has-text('Pragmatic') button" } },
+    { "look": "empty cart, 0.00 everywhere, no error" }
+  ]
+}

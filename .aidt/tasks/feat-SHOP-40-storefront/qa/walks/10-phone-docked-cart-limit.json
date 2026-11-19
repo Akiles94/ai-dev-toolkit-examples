@@ -1,0 +1,19 @@
+{
+  "title": "Phone: docked cart with a long cart, stock-limit message, filter change",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "shopper": { "device": "phone" } },
+  "steps": [
+    { "go": "/" },
+    { "click": { "selector": "article:has-text('Pragmatic') button" } },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "click": { "selector": "article:has-text('Refactoring') button" }, "times": 4 },
+    { "click": { "selector": "article:has-text('Refactoring') button" } },
+    { "look": "phone: No more in stock visible inside the docked cart; totals reachable" },
+    { "select": { "label": "Category", "option": "Games" } },
+    { "look": "message gone after filter change" },
+    { "select": { "label": "Category", "option": "Music" } },
+    { "look": "only Kind of Blue; cart docked, nothing overlapping" },
+    { "reload": true },
+    { "look": "after reload cart still docked with 3 lines and total" }
+  ]
+}

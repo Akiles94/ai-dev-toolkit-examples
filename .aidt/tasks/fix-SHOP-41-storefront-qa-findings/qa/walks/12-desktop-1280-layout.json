@@ -1,0 +1,14 @@
+{
+  "title": "Desktop 1280: layout unchanged after the phone cart CSS (pass 3, R5)",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "shopper": { "device": "desktop" } },
+  "steps": [
+    { "go": "/" },
+    { "look": "R5: at desktop width, cards and the cart panel as before: cart not docked to the bottom, no phone styles (no scroll shadows, no 40vh cap)" },
+    { "click": { "selector": "article:has-text('Pragmatic') button" } },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "click": { "selector": "article:has-text('Refactoring') button" }, "times": 4 },
+    { "click": { "selector": "article:has-text('Refactoring') button" } },
+    { "look": "R5: 3 lines with whole Remove buttons, totals, No more in stock; the cart not covering the cards; layout the same as the desktop walk 02" }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "title": "J4 Reload keeps the cart; back/leave and return; storage cleared; unknown kept cart",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "shopper": { "device": "desktop" } },
+  "steps": [
+    { "go": "/" },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "reload": true },
+    { "look": "Tetris Effect x 2 still in the cart" },
+    { "go": "/products" },
+    { "back": true },
+    { "look": "page after back: cart still Tetris x2?" },
+    { "clear": "storage" },
+    { "reload": true },
+    { "look": "new empty cart, no error" },
+    { "click": { "selector": "article:has-text('Pragmatic') button" } },
+    { "look": "Pragmatic x1 works in the new cart" }
+  ]
+}

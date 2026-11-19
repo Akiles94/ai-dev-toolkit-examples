@@ -1,0 +1,20 @@
+{
+  "title": "Phone: docked cart with a long cart, stock-limit message, filter change (pass 3, QA-05)",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "shopper": { "device": "phone" } },
+  "steps": [
+    { "go": "/" },
+    { "click": { "selector": "article:has-text('Pragmatic') button" } },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "click": { "selector": "article:has-text('Refactoring') button" }, "times": 4 },
+    { "look": "R6: 3 lines (Pragmatic, Tetris, Refactoring x 4): is every line's Remove button whole, none cut, then Subtotal, Shipping, Total? any gap that clips a button? no scrolling inside the cart" },
+    { "click": { "selector": "article:has-text('Refactoring') button" } },
+    { "look": "R6: No more in stock visible, the 3 lines with whole Remove buttons and the totals all in view" },
+    { "select": { "label": "Category", "option": "Games" } },
+    { "look": "message gone after filter change; cart unchanged" },
+    { "select": { "label": "Category", "option": "Music" } },
+    { "look": "R6: only Kind of Blue; cart looks the same, nothing overlaps or clips, no blank gap under the last Remove" },
+    { "reload": true },
+    { "look": "after reload the cart still shows 3 lines, whole Remove buttons and the total" }
+  ]
+}

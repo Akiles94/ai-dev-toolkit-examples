@@ -1,0 +1,23 @@
+{
+  "title": "Offline on add, on remove and on load",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "shopper": { "device": "desktop" } },
+  "steps": [
+    { "go": "/" },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "offline": true },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "wait": 500 },
+    { "look": "message Something went wrong. Try again.; cart still Tetris x1" },
+    { "click": { "selector": "li:has-text('Tetris') button" } },
+    { "wait": 500 },
+    { "look": "message on failed remove; cart still Tetris x1" },
+    { "offline": false },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "look": "retry works: Tetris x2; is the error message cleared?" },
+    { "offline": true },
+    { "reload": true },
+    { "wait": 800 },
+    { "look": "load failed offline: what does the person see? products? any text?" }
+  ]
+}

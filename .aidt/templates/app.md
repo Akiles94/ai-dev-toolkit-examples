@@ -33,5 +33,9 @@
 
 ## QA
 
-<!-- Filled when the `qa` agent is installed: who uses the product, where flows and promises are
-written, what is already known or accepted. -->
+- **Where each journey is written:** {{flow documents, specs (`.aidt/tasks/*/spec.md`), tickets…}}
+- **Promises:** {{landing page, emails, terms, help texts, and where each one is}}
+- **Already known or accepted** (not reported again unless worse): {{… or «none»}}
+- **Someone with bad intentions could try:** {{another person's ids or links, calls that skip the
+  page, replays… what applies here}}
+- **Staff side:** {{what the team can see or do for a person, and where, or «none»}}

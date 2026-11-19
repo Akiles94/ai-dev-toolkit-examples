@@ -22,6 +22,7 @@ allowed-tools:
   - "Bash(aidt check *)"
   - "Bash(aidt stack *)"
   - "Bash(aidt structure audit *)"
+  - "Bash(aidt context check *)"
   - "Bash(erctx check *)"
   - "Bash(erctx context *)"
   - "Bash(living-docs check *)"
@@ -36,6 +37,7 @@ allowed-tools:
   - "Bash(npx @akiles94/ai-dev-toolkit check *)"
   - "Bash(npx @akiles94/ai-dev-toolkit stack *)"
   - "Bash(npx @akiles94/ai-dev-toolkit structure audit *)"
+  - "Bash(npx @akiles94/ai-dev-toolkit context check *)"
 context: fork
 agent: general-purpose
 background: false
@@ -61,6 +63,7 @@ Run only commands starting with:
 - `aidt check`
 - `aidt stack`
 - `aidt structure audit`
+- `aidt context check`
 - `erctx check`
 - `erctx context`
 - `living-docs check`
@@ -75,6 +78,7 @@ Run only commands starting with:
 - `npx @akiles94/ai-dev-toolkit check`
 - `npx @akiles94/ai-dev-toolkit stack`
 - `npx @akiles94/ai-dev-toolkit structure audit`
+- `npx @akiles94/ai-dev-toolkit context check`
 Never change source code.
 
 If `aidt` is not installed, run the same command as `npx @akiles94/ai-dev-toolkit …` (for example
@@ -105,8 +109,9 @@ through the workflow; follow section 7.
    - The section diff itself: `git show <commit>`.
 3. Run the project gates once on the last commit: the quality commands (static analysis, tests,
    coverage), `aidt check` (section sizes, every requirement referenced by a test),
-   `aidt clean --check` (no guide comments may remain), and `erctx check` /
-   `living-docs check` when the project uses them.
+   `aidt clean --check` (no guide comments may remain), `aidt context check` when the project
+   has `.aidt/practices/session-context.md` (a layer over budget or a missing «Read first» path is
+   a finding), and `erctx check` / `living-docs check` when the project uses them.
 4. Find affected flows from the changed files and symbols: `erctx context <file>` when available,
    otherwise search for callers of the changed exported symbols.
 
@@ -234,8 +239,9 @@ someone else will have to approve.
    its own guide from the template; a small change is one part. The verdict applies to the
    reviewed `HEAD` commit.
 5. **Same checks, fewer gates:** the defect search of section 2, the quality rating of section 3,
-   the quality commands, `aidt diff --json`, `aidt clean --check`, and
-   `aidt structure audit` when `.aidt/structure.md` exists. Skip `aidt check` and `aidt stack`:
+   the quality commands, `aidt diff --json`, `aidt clean --check`,
+   `aidt structure audit` when `.aidt/structure.md` exists, and `aidt context check` when
+   `.aidt/practices/session-context.md` exists (a breach is a finding). Skip `aidt check` and `aidt stack`:
    they need a workflow task. Do not create `state.json`.
 6. **Report:** the verdict, requirement coverage, the findings that matter and the quality
    ratings with their suggestions, with the path of the guides so the user can paste them as the

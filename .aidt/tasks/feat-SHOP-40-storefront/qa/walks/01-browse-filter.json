@@ -1,0 +1,15 @@
+{
+  "title": "J1 Browse: first visit, four cards, filter by category",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "shopper": { "device": "desktop" } },
+  "steps": [
+    { "go": "/" },
+    { "look": "four cards with name, price and stock label; Kind of Blue Out of stock; Refactoring Only 4 left; filter All" },
+    { "select": { "label": "Category", "option": "Books" } },
+    { "look": "only The Pragmatic Programmer and Refactoring" },
+    { "select": { "label": "Category", "option": "Music" } },
+    { "look": "only Kind of Blue, Add to cart disabled" },
+    { "select": { "label": "Category", "option": "All" } },
+    { "look": "all four cards again" }
+  ]
+}

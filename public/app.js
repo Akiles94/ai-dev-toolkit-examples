@@ -5,6 +5,7 @@ import {
   cartPanelView,
   filterByCategory,
   formatCents,
+  messageAfter,
   stockLabel,
 } from "/shop-view.js";
 
@@ -72,14 +73,14 @@ async function add(productId) {
     messageEl.textContent = result.error;
     return;
   }
-  messageEl.textContent = "";
+  messageEl.textContent = messageAfter("added", messageEl.textContent);
   state.cart = result;
   renderCart();
 }
 
 async function remove(productId) {
   state.cart = await removeFromCart(env, state.cart.id, productId);
-  messageEl.textContent = "";
+  messageEl.textContent = messageAfter("removed", messageEl.textContent);
   renderCart();
 }
 
@@ -91,7 +92,10 @@ async function run(action) {
   }
 }
 
-categoryEl.addEventListener("change", renderProducts);
+categoryEl.addEventListener("change", () => {
+  messageEl.textContent = messageAfter("filter-changed", messageEl.textContent);
+  renderProducts();
+});
 
 async function start() {
   state.products = await (await fetch("/products")).json();

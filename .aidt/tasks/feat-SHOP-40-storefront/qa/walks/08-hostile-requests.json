@@ -1,0 +1,30 @@
+{
+  "title": "Bad intentions: calls the page never sends, and odd static paths",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "intruder": { "device": "desktop" } },
+  "steps": [
+    { "go": "/" },
+    { "keep": { "cart": "localStorage.getItem('shop.cartId')" } },
+    { "request": { "method": "POST", "path": "/carts/{cart}/items", "body": { "productId": "p-3", "qty": 0 } } },
+    { "request": { "method": "POST", "path": "/carts/{cart}/items", "body": { "productId": "p-3", "qty": -1 } } },
+    { "request": { "method": "POST", "path": "/carts/{cart}/items", "body": { "productId": "p-3", "qty": 1000000000 } } },
+    { "request": { "method": "POST", "path": "/carts/{cart}/items", "body": { "productId": "p-3", "qty": "2" } } },
+    { "request": { "method": "POST", "path": "/carts/{cart}/items", "body": { "productId": "p-3", "qty": 1.5 } } },
+    { "request": { "method": "POST", "path": "/carts/{cart}/items", "body": { "productId": "nope", "qty": 1 } } },
+    { "request": { "method": "POST", "path": "/carts/{cart}/items", "body": { "productId": "p-4", "qty": 1 } } },
+    { "request": { "method": "POST", "path": "/carts/{cart}/items", "body": null } },
+    { "request": { "method": "POST", "path": "/carts/{cart}/items", "body": "not json{" } },
+    { "request": { "method": "POST", "path": "/carts/nope/items", "body": { "productId": "p-3", "qty": 1 } } },
+    { "request": { "method": "DELETE", "path": "/carts/{cart}/items/nope" } },
+    { "request": { "method": "GET", "path": "/products?category=toys" } },
+    { "request": { "method": "GET", "path": "/../package.json" } },
+    { "request": { "method": "GET", "path": "/%2e%2e/package.json" } },
+    { "request": { "method": "GET", "path": "/index.html" } },
+    { "request": { "method": "GET", "path": "/unknown" } },
+    { "request": { "method": "GET", "path": "/src/server.ts" } },
+    { "request": { "method": "POST", "path": "/" } },
+    { "go": "/" },
+    { "reload": true },
+    { "look": "cart after the hostile calls: what is in it? does the page still render?" }
+  ]
+}

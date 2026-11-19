@@ -1,0 +1,11 @@
+{
+  "title": "Phone width: cards, cart panel, long cart",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "shopper": { "device": "phone" } },
+  "steps": [
+    { "go": "/" },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "click": { "selector": "article:has-text('Refactoring') button" } },
+    { "look": "on a phone: is the cart reachable, readable, buttons not cut off? check the screenshot" }
+  ]
+}

@@ -1,12 +1,14 @@
 # Status
 
-_Updated: 18/11/2026 · `9294c30` on `claude/gifted-volta-n479gk`_
+_Updated: 19/11/2026 · `b5930fa` on `fix/SHOP-41-storefront-qa-findings`_
 
 ## Now
 
-Nothing in progress. SHOP-40 is closed: the storefront page at `/`, the reviewer's PASS on its three
-sections, its demo in `examples/demo/`. It is on this branch with no PR yet. PRs #3 and #4 (SHOP-24)
-are still open as drafts.
+Nothing in progress. SHOP-41 (the fixes of the storefront's QA) is built and reviewed: PASS on
+its four sections. The QA's third pass gave PASS: QA-01, QA-02, QA-03 and QA-05 fixed; QA-04
+accepted until accounts exist (in `.aidt/app.md`). Reports: `.aidt/tasks/feat-SHOP-40-storefront/qa/`
+and `.aidt/tasks/fix-SHOP-41-storefront-qa-findings/qa/`. PRs #3 and #4 (SHOP-24) are still open
+as drafts.
 
 ## Next
 
@@ -33,11 +35,12 @@ control level from the user before it starts.
 ## Open decisions
 
 - PRs #3 and #4: keep as the workflow's example (recommended), or merge into `main`?
-- SHOP-40: open a PR for the three sections, or keep it as the example (recommended)?
+- SHOP-40 and SHOP-41: open PRs, or keep them as the examples (recommended)?
 - Structure migration: start now (recommended), or later?
 
 ## Recent
 
+- 19/11 · SHOP-41 and the storefront's QA, PASS · `examples/qa/README.md`
 - 18/11 · SHOP-40 · `.aidt/tasks/feat-SHOP-40-storefront/summary.md`
 - 07/11 · SHOP-24 · `.aidt/tasks/feat-SHOP-24-low-stock-alerts/summary.md`
 - 06/11 · Structure audit and decision · `.aidt/tasks/structure-decision/summary.md`

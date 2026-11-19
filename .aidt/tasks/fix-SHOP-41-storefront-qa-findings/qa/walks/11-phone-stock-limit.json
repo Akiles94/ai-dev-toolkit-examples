@@ -1,0 +1,16 @@
+{
+  "title": "Phone: fifth Refactoring add at the stock limit (pass 3, R4 and R6)",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "shopper": { "device": "phone" } },
+  "steps": [
+    { "go": "/" },
+    { "click": { "selector": "article:has-text('Pragmatic') button" } },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "click": { "selector": "article:has-text('Refactoring') button" }, "times": 4 },
+    { "look": "Refactoring x 4, no message; lines and totals whole" },
+    { "click": { "selector": "article:has-text('Refactoring') button" } },
+    { "look": "R4/R6: the fifth add shows No more in stock in view; Refactoring still x 4; three lines, whole Remove buttons, Subtotal, Shipping, Total all whole" },
+    { "select": { "label": "Category", "option": "Music" } },
+    { "look": "R6: the cart is intact after the Music filter (nothing overlaps or clips); message cleared" }
+  ]
+}

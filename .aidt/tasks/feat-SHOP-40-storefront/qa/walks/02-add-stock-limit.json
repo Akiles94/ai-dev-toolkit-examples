@@ -1,0 +1,24 @@
+{
+  "title": "J2 Add Refactoring x4 then a fifth; totals over/under $50",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "shopper": { "device": "desktop" } },
+  "steps": [
+    { "go": "/" },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "look": "Tetris Effect x 1 $29.99; subtotal 29.99 shipping 4.99 total 34.98" },
+    { "click": { "selector": "article:has-text('Tetris Effect') button" } },
+    { "look": "Tetris Effect x 2 one line; subtotal 59.98 shipping 0.00" },
+    { "click": { "selector": "article:has-text('Refactoring') button" } },
+    { "click": { "selector": "article:has-text('Refactoring') button" } },
+    { "click": { "selector": "article:has-text('Refactoring') button" } },
+    { "click": { "selector": "article:has-text('Refactoring') button" } },
+    { "look": "Refactoring x 4, no message" },
+    { "click": { "selector": "article:has-text('Refactoring') button" } },
+    { "look": "No more in stock shown; Refactoring still x 4" },
+    { "select": { "label": "Category", "option": "Games" } },
+    { "look": "is the No more in stock message still showing though nothing relates to it?" },
+    { "select": { "label": "Category", "option": "Music" } },
+    { "click": { "selector": "article:has-text('Kind of Blue') button:not([disabled])" } },
+    { "look": "Kind of Blue button disabled so nothing happens (cart unchanged)" }
+  ]
+}

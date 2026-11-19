@@ -1,0 +1,14 @@
+{
+  "title": "Double tap on Add to cart (Refactoring has 4 in stock)",
+  "app": { "url": "http://localhost:3000" },
+  "people": { "shopper": { "device": "desktop" } },
+  "steps": [
+    { "go": "/" },
+    { "click": { "selector": "article:has-text('Refactoring') button" }, "times": 2 },
+    { "look": "Refactoring x 2 (one line), not x1 and not duplicated" },
+    { "click": { "selector": "article:has-text('Refactoring') button" }, "times": 3 },
+    { "look": "stock 4: either x4 with No more in stock message, never x5" },
+    { "reload": true },
+    { "look": "cart after reload: Refactoring x 4" }
+  ]
+}
